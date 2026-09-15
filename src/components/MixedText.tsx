@@ -11,9 +11,9 @@ export function MixedText({ text, className, hebrewClassName }: MixedTextProps) 
     <span className={className} dir="ltr">
       {splitMixedText(text).map((part, index) =>
         part.hebrew ? (
-          <span key={index} className={`hebrew ${hebrewClassName ?? ''}`} lang="he" dir="rtl">
+          <bdi key={index} className={`hebrew ${hebrewClassName ?? ''}`} lang="he">
             {part.text}
-          </span>
+          </bdi>
         ) : (
           <span key={index}>{part.text}</span>
         ),

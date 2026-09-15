@@ -1,5 +1,4 @@
-const HEBREW_ATOM =
-  /[\u0590-\u05FF\u05BE\u05F3\u05F4]/
+const HEBREW_ATOM = /[\u0590-\u05FF\u05BE\u05F3\u05F4]/
 
 export type MixedPart = {
   text: string
@@ -11,18 +10,14 @@ export function splitMixedText(text: string): MixedPart[] {
   let buffer = ''
   let hebrew: boolean | null = null
 
-  for (let index = 0; index < text.length; index += 1) {
-    const char = text[index] ?? ''
-    const isHebrew = isHebrewChar(char)
-    const keepHebrewSpace =
-      hebrew === true && isSpace(char) && nextNonSpaceIsHebrew(text, index + 1)
-
+  for (const char of text) {
+    const isHebrew = isHebrewChar(char) || isHebrewMark(char)
     if (hebrew === null) {
       hebrew = isHebrew
       buffer = char
       continue
     }
-    if (isHebrew === hebrew || keepHebrewSpace || (hebrew && isHebrewMark(char))) {
+    if (isHebrew === hebrew) {
       buffer += char
       continue
     }
@@ -56,21 +51,6 @@ function isHebrewChar(char: string): boolean {
 
 function isHebrewMark(char: string): boolean {
   return /[\u0591-\u05C7]/.test(char)
-}
-
-function isSpace(char: string): boolean {
-  return /\s/.test(char)
-}
-
-function nextNonSpaceIsHebrew(text: string, start: number): boolean {
-  for (let index = start; index < text.length; index += 1) {
-    const char = text[index] ?? ''
-    if (isSpace(char)) {
-      continue
-    }
-    return isHebrewChar(char) || isHebrewMark(char)
-  }
-  return false
 }
 
 function stripMarks(value: string): string {

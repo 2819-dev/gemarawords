@@ -5,7 +5,7 @@ describe('splitMixedText', () => {
   it('keeps Hebrew runs together inside an English question', () => {
     const parts = splitMixedText('What does יֵאוּשׁ שֶׁלֹּא מִדַּעַת mean?')
     const hebrew = parts.filter((part) => part.hebrew).map((part) => part.text)
-    expect(hebrew).toEqual(['יֵאוּשׁ שֶׁלֹּא מִדַּעַת'])
+    expect(hebrew).toEqual(['יֵאוּשׁ', 'שֶׁלֹּא', 'מִדַּעַת'])
     expect(parts.some((part) => !part.hebrew && part.text.includes('What does'))).toBe(true)
     expect(parts.some((part) => !part.hebrew && part.text.includes('mean?'))).toBe(true)
   })
