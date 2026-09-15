@@ -13,21 +13,34 @@ describe('Bava Metzia 21b pack', () => {
     expect(kinds.has('word')).toBe(true)
     expect(kinds.has('sentence')).toBe(true)
     expect(kinds.has('question')).toBe(true)
-    expect(pack.some((card) => card.hebrew.includes('לֵית'))).toBe(true)
-    expect(pack.some((card) => card.hebrew === 'הָוֵי')).toBe(true)
+    expect(pack.some((card) => card.hebrew === 'הָוֵי')).toBe(false)
+    expect(pack.some((card) => card.hebrew === 'אַף עַל גַּב')).toBe(false)
     expect(pack.some((card) => card.hebrew === 'מַכְנַשְׁתָּא דְּבֵי דָרֵי')).toBe(true)
     expect(pack.some((card) => card.hebrew === 'כַּבָּא דְחִטֵּי')).toBe(true)
-    expect(pack.some((card) => card.hebrew === 'אַף עַל גַּב')).toBe(true)
     expect(pack.some((card) => card.hebrew === 'גַּנָּב')).toBe(false)
     expect(pack.some((card) => card.hebrew === 'תָּא')).toBe(false)
-    expect(pack.some((card) => card.hebrew === 'עָלְמָא')).toBe(false)
-    expect(pack.some((card) => card.kind === 'question' && card.prompt?.includes('יֵאוּשׁ'))).toBe(
-      true,
-    )
     expect(
       pack
-        .filter((card) => card.kind === 'question')
-        .every((card) => card.prompt && /[\u0590-\u05FF]/.test(card.prompt)),
+        .filter((card) => card.kind === 'sentence' || card.kind === 'question')
+        .every((card) => !/[\u0590-\u05FF]/.test(card.translation)),
+    ).toBe(true)
+    expect(
+      pack
+        .filter((card) => card.kind === 'sentence')
+        .every((card) => /english/i.test(card.prompt ?? '')),
+    ).toBe(true)
+    expect(
+      pack.some(
+        (card) =>
+          card.kind === 'question' &&
+          /raayah/i.test(`${card.prompt} ${card.translation}`),
+      ),
+    ).toBe(true)
+    expect(
+      pack.some(
+        (card) =>
+          card.kind === 'question' && /diyuk/i.test(`${card.prompt} ${card.translation}`),
+      ),
     ).toBe(true)
     expect(pack.some((card) => /unconscious/i.test(card.translation))).toBe(false)
     expect(pack.some((card) => /goren/i.test(card.translation))).toBe(false)

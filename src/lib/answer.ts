@@ -81,7 +81,7 @@ export function questionFor(card: Card): string {
     return card.prompt
   }
   if (card.kind === 'sentence') {
-    return 'What is the Gemara saying here?'
+    return 'In English, what is the Gemara saying here?'
   }
   return `What does ${card.hebrew} mean?`
 }
@@ -102,7 +102,7 @@ export function checkAnswer(card: Card, raw: string): AnswerCheck {
     return { correct: false, reason: 'empty' }
   }
 
-  if (normalizeAnswer(card.hebrew) === user) {
+  if (isHebrewCopy(card, raw, user)) {
     return { correct: false, reason: 'echo' }
   }
 
@@ -120,10 +120,6 @@ export function checkAnswer(card: Card, raw: string): AnswerCheck {
 
   if (user === expected) {
     return { correct: true, reason: 'exact' }
-  }
-
-  if (matchesHebrewInAnswer(card, user)) {
-    return { correct: true, reason: 'phrase' }
   }
 
   if (isPhraseMatch(expected, user)) {
@@ -155,16 +151,35 @@ export function checkAnswer(card: Card, raw: string): AnswerCheck {
   return { correct: false, reason: 'miss' }
 }
 
-function matchesHebrewInAnswer(card: Card, user: string): boolean {
-  if (!/[\u0590-\u05ff]/.test(user)) {
-    return false
-  }
-  if (user === normalizeAnswer(card.hebrew)) {
-    return false
-  }
-  const expected = normalizeAnswer(card.translation)
-  return expected === user || hasPhrase(expected, user)
+export function isMostlyHebrew(text: string): boolean {
+  const hebrew = (text.match(/[\u0590-\u05FF]/g) ?? []).length
+  const latin = (text.match(/[A-Za-z]/g) ?? []).length
+  return hebrew >= 6 && hebrew > latin
 }
+
+function compactHebrew(text: string): string {
+  return stripNikkud(text).replace(/[^\u0590-\u05FF]/g, '')
+}
+
+function copiesDisplayedHebrew(guess: string, displayed: string): boolean {
+  const g = compactHebrew(guess)
+  const h = compactHebrew(displayed)
+  if (g.length < 6 || h.length < 6) {
+    return false
+  }
+  return h.includes(g) || g.includes(h)
+}
+
+function isHebrewCopy(card: Card, raw: string, user: string): boolean {
+  if (normalizeAnswer(card.hebrew) === user) {
+    return true
+  }
+  if (isMostlyHebrew(raw) || copiesDisplayedHebrew(raw, card.hebrew)) {
+    return true
+  }
+  return false
+}
+
 function polarity(text: string): 'yes' | 'no' | null {
   if (/^(yes|yeah|yep|yea)\b/.test(text)) {
     return 'yes'

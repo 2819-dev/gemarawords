@@ -113,7 +113,8 @@ export function DeckScreen({
             <div className="accent-rule mt-3 w-24" />
           </div>
           <p className="max-w-md text-[1.05rem] leading-relaxed text-muted">
-            A typed review of the sugya — words, lines of Gemara, and questions.
+            A typed review of the sugya — the terms that matter, the Gemara, and
+            the raayos and diyukim. Answer in English, not by copying the Hebrew.
             Missed cards come back until you get them twice in a row.
           </p>
         </header>

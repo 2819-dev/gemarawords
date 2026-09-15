@@ -20,10 +20,10 @@ describe('questionFor', () => {
     )
   })
 
-  it('asks what the Gemara is saying', () => {
+  it('asks for the Gemara in English', () => {
     expect(
       questionFor(card({ kind: 'sentence', hebrew: 'תָּא שְׁמַע', translation: 'come and hear' })),
-    ).toBe('What is the Gemara saying here?')
+    ).toBe('In English, what is the Gemara saying here?')
   })
 
   it('uses the written prompt for questions', () => {
@@ -96,17 +96,18 @@ describe('checkAnswer', () => {
     ).toBe(false)
   })
 
-  it('accepts Hebrew that appears in the official answer', () => {
-    const result = checkAnswer(
-      card({
-        kind: 'question',
-        hebrew: 'אַבָּיֵי',
-        prompt: 'What does אַבָּיֵי hold?',
-        translation: 'לָא הָוֵי יֵאוּשׁ — he never actually gave up hope',
-      }),
-      'לא הוי יאוש',
-    )
-    expect(result.correct).toBe(true)
+  it('rejects copying the Hebrew instead of saying the pshat in English', () => {
+    const line = card({
+      kind: 'sentence',
+      hebrew: 'יֵאוּשׁ שֶׁלֹּא מִדַּעַת, אַבָּיֵי אָמַר: לָא הָוֵי יֵאוּשׁ.',
+      translation: 'Abaye says giving up hope without knowledge is not ye’ush.',
+      keywords: ['abaye', 'not yeush', 'without knowledge'],
+    })
+    expect(checkAnswer(line, 'לא הוי יאוש').correct).toBe(false)
+    expect(
+      checkAnswer(line, line.hebrew).reason,
+    ).toBe('echo')
+    expect(checkAnswer(line, 'Abaye says it is not yeush').correct).toBe(true)
   })
 
   it('treats ye’ush and yeush as the same', () => {

@@ -178,7 +178,7 @@ export function StudyScreen({
               autoComplete="off"
               autoCorrect="off"
               spellCheck
-              placeholder="Type the pshat"
+              placeholder="Type the pshat in English"
               className="w-full resize-none rounded-2xl border border-line bg-card px-4 py-3 text-lg text-ink outline-none ring-accent/40 focus:ring-2"
             />
             <div className="mt-3 grid grid-cols-2 gap-3">
@@ -212,7 +212,7 @@ function feedbackCopy(result: AnswerCheck): string {
     return 'Here is the answer.'
   }
   if (result.reason === 'echo') {
-    return 'Say what it means, not just the same words.'
+    return 'Say it in English — copying the Hebrew is not the pshat.'
   }
   return 'Not quite.'
 }
