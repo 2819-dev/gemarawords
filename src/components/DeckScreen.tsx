@@ -3,6 +3,7 @@ import { buildDafPack, PAGES, type DafPage } from '../lib/daf.ts'
 import { questionFor } from '../lib/answer.ts'
 import { MASTER_STREAK } from '../lib/scheduler.ts'
 import { roundHeadline, type RoundSummary } from '../lib/session.ts'
+import type { ExamResult } from '../lib/exam.ts'
 import type { Card, CardKind } from '../lib/types.ts'
 import { AppFrame } from './AppFrame.tsx'
 import { KindBadge } from './KindBadge.tsx'
@@ -19,6 +20,7 @@ type DeckScreenProps = {
   notice: string
   error: string
   lastRound: RoundSummary | null
+  lastExam: ExamResult | null
   onSelectPage: (pageId: string) => void
   onLoadDaf: () => void
   onPasteChange: (value: string) => void
@@ -28,6 +30,8 @@ type DeckScreenProps = {
   onRemove: (id: string) => void
   onClear: () => void
   onStart: () => void
+  onExam: () => void
+  onCertificate: () => void
 }
 
 const RAIL: Record<CardKind, string> = {
@@ -45,6 +49,7 @@ export function DeckScreen({
   notice,
   error,
   lastRound,
+  lastExam,
   onSelectPage,
   onLoadDaf,
   onPasteChange,
@@ -54,6 +59,8 @@ export function DeckScreen({
   onRemove,
   onClear,
   onStart,
+  onExam,
+  onCertificate,
 }: DeckScreenProps) {
   const fileInput = useRef<HTMLInputElement>(null)
   const [dropping, setDropping] = useState(false)
@@ -277,6 +284,54 @@ export function DeckScreen({
             </p>
           </button>
         ) : null}
+
+        <section className="quiz-card relative overflow-hidden px-5 py-6 sm:px-7">
+          <p
+            className="hebrew pointer-events-none absolute -bottom-6 -right-2 select-none text-[7rem] leading-none text-accent opacity-[0.07]"
+            lang="he"
+            dir="rtl"
+            aria-hidden="true"
+          >
+            מבחן
+          </p>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-accent">
+            Test Week
+          </p>
+          <h2 className="font-display mt-2 text-3xl font-medium text-ink">
+            Sit the bechina
+          </h2>
+          <p className="mt-2 max-w-lg text-[1.05rem] leading-relaxed text-muted">
+            A full written test on this sugya. Download the packet, write it,
+            upload your answers, and get a score — then a certificate.
+          </p>
+          {lastExam ? (
+            <p className="mt-3 text-sm text-muted">
+              Last bechina: {lastExam.correct}/{lastExam.total} · {lastExam.honor}
+            </p>
+          ) : (
+            <p className="mt-3 text-sm text-muted">
+              17 English questions · machlokes, diyukim, raayos.
+            </p>
+          )}
+          <div className="relative mt-5 flex flex-col gap-3 sm:flex-row">
+            <button
+              type="button"
+              onClick={onExam}
+              className="pressable flex-1 rounded-full bg-ink px-5 py-3.5 text-base font-semibold text-white shadow-md"
+            >
+              {lastExam ? 'Sit it again' : 'Open Test Week'}
+            </button>
+            {lastExam ? (
+              <button
+                type="button"
+                onClick={onCertificate}
+                className="pressable rounded-full border border-ink/15 bg-canvas px-5 py-3.5 text-sm font-semibold text-ink sm:min-w-44"
+              >
+                Certificate
+              </button>
+            ) : null}
+          </div>
+        </section>
 
         <section className="flex flex-col gap-4">
           <div className="flex items-end justify-between gap-3">

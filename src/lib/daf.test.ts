@@ -44,6 +44,20 @@ describe('Bava Metzia 21b pack', () => {
     ).toBe(true)
     expect(pack.some((card) => /unconscious/i.test(card.translation))).toBe(false)
     expect(pack.some((card) => /goren/i.test(card.translation))).toBe(false)
+    expect(
+      pack.some(
+        (card) =>
+          card.id === 'bm21b-q-later-ring' &&
+          /may the finder keep it/i.test(card.prompt ?? ''),
+      ),
+    ).toBe(true)
+    expect(
+      pack.some(
+        (card) =>
+          card.id === 'bm21b-q-when-abaye-yes' &&
+          /when does abaye agree/i.test(card.prompt ?? ''),
+      ),
+    ).toBe(true)
     const shelo = pack.find((card) => card.hebrew === 'יֵאוּשׁ שֶׁלֹּא מִדַּעַת')
     expect(shelo?.translation).toMatch(/Giving up hope without knowledge/i)
     const threshing = pack.find((card) => card.hebrew === 'מַכְנַשְׁתָּא דְּבֵי דָרֵי')
