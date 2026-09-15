@@ -3,12 +3,6 @@ type SenseNode = {
   senses?: unknown
 }
 
-const PREFERRED_LEXICONS = [
-  'Jastrow Dictionary',
-  'Jastrow Unabbreviated',
-  'Klein Dictionary',
-]
-
 function asRecord(value: unknown): Record<string, unknown> | null {
   if (!value || typeof value !== 'object' || Array.isArray(value)) {
     return null
@@ -58,7 +52,7 @@ function stripTags(html: string): string {
 function extractItalics(html: string): string[] {
   return [...html.matchAll(/<i>(.*?)<\/i>/gi)]
     .map((match) => stripTags(match[1] ?? ''))
-    .filter((text) => text.length > 1)
+    .filter((text) => text.length > 3 && !/^(pa|af|ithpa|ithpe|aphel)\.?$/i.test(text))
 }
 
 function tidyGloss(text: string): string {
@@ -85,9 +79,21 @@ function isUsefulGloss(text: string): boolean {
 export function glossFromDefinition(definition: string): string {
   const italics = extractItalics(definition)
   if (italics.length > 0) {
-    return tidyGloss(italics.slice(0, 3).join(', '))
+    return tidyGloss(italics[0] ?? '')
   }
   return tidyGloss(stripTags(definition))
+}
+
+function glossFromEntry(entry: unknown): string {
+  const record = asRecord(entry)
+  if (!record) {
+    return ''
+  }
+  return (
+    collectDefinitions(record.content as SenseNode)
+      .map(glossFromDefinition)
+      .find(isUsefulGloss) ?? ''
+  )
 }
 
 export function pickGloss(entries: unknown): string {
@@ -95,33 +101,12 @@ export function pickGloss(entries: unknown): string {
     return ''
   }
 
-  const scored = entries
-    .map((entry) => {
-      const record = asRecord(entry)
-      if (!record) {
-        return null
-      }
-      const lexicon =
-        typeof record.parent_lexicon === 'string' ? record.parent_lexicon : ''
-      const definitions = collectDefinitions(record.content as SenseNode)
-      const glosses = definitions
-        .map(glossFromDefinition)
-        .filter(isUsefulGloss)
-      return {
-        lexicon,
-        gloss: glosses[0] ?? '',
-        preferredIndex: PREFERRED_LEXICONS.findIndex(
-          (name) => lexicon === name || lexicon.startsWith(name),
-        ),
-      }
-    })
-    .filter((item): item is NonNullable<typeof item> => Boolean(item?.gloss))
+  for (const entry of entries) {
+    const gloss = glossFromEntry(entry)
+    if (gloss) {
+      return gloss
+    }
+  }
 
-  scored.sort((a, b) => {
-    const aPref = a.preferredIndex === -1 ? 99 : a.preferredIndex
-    const bPref = b.preferredIndex === -1 ? 99 : b.preferredIndex
-    return aPref - bPref
-  })
-
-  return scored[0]?.gloss ?? ''
+  return ''
 }
