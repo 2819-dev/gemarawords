@@ -3,6 +3,7 @@ import type { Card, CardKind, TranslationSource } from './types.ts'
 export type DafPage = {
   id: string
   ref: string
+  lookupRef: string
   label: string
   hebrewLabel: string
   chapter: string
@@ -13,6 +14,7 @@ export const PAGES: DafPage[] = [
   {
     id: 'bava-metzia-21b',
     ref: 'Bava_Metzia.21b',
+    lookupRef: 'Bava Metzia 21b',
     label: 'Bava Metzia 21b',
     hebrewLabel: 'בבא מציעא כ״א ע״ב',
     chapter: 'אלו מציאות',
@@ -74,6 +76,84 @@ const WORDS: PackItem[] = [
     kind: 'word',
     hebrew: 'הָוֵי יֵאוּשׁ',
     translation: 'It is (valid) despair. The finder may keep it.',
+  },
+  {
+    id: 'bm21b-w-havei-verb',
+    kind: 'word',
+    hebrew: 'הָוֵי',
+    translation: 'Aramaic: is / was / would be. From הוי, to be.',
+  },
+  {
+    id: 'bm21b-w-ait',
+    kind: 'word',
+    hebrew: 'אִית',
+    translation: 'Aramaic: there is / there are.',
+  },
+  {
+    id: 'bm21b-w-leit',
+    kind: 'word',
+    hebrew: 'לֵית',
+    translation: 'Aramaic: there is not. From לא אית.',
+  },
+  {
+    id: 'bm21b-w-ta',
+    kind: 'word',
+    hebrew: 'תָּא',
+    translation: 'Aramaic: come! Imperative of אתא, to come.',
+  },
+  {
+    id: 'bm21b-w-alma',
+    kind: 'word',
+    hebrew: 'עָלְמָא',
+    translation: 'Aramaic: the world. כולי עלמא = everyone.',
+  },
+  {
+    id: 'bm21b-w-nami',
+    kind: 'word',
+    hebrew: 'נָמֵי',
+    translation: 'Aramaic: also / too.',
+  },
+  {
+    id: 'bm21b-w-hacha',
+    kind: 'word',
+    hebrew: 'הָכָא',
+    translation: 'Aramaic: here.',
+  },
+  {
+    id: 'bm21b-w-hatam',
+    kind: 'word',
+    hebrew: 'הָתָם',
+    translation: 'Aramaic: there.',
+  },
+  {
+    id: 'bm21b-w-amai',
+    kind: 'word',
+    hebrew: 'אַמַּאי',
+    translation: 'Aramaic: why?',
+  },
+  {
+    id: 'bm21b-w-meimar',
+    kind: 'word',
+    hebrew: 'מֵימָר אָמַר',
+    translation: 'Aramaic: he would say to himself.',
+  },
+  {
+    id: 'bm21b-w-ata-lideih',
+    kind: 'word',
+    hebrew: 'אֲתָא לִידֵיהּ',
+    translation: 'Aramaic: it came into his possession (into his hand).',
+  },
+  {
+    id: 'bm21b-w-issura',
+    kind: 'word',
+    hebrew: 'בְּאִיסּוּרָא',
+    translation: 'In a prohibited way — the finder already took it while it was still forbidden.',
+  },
+  {
+    id: 'bm21b-w-simana-leit',
+    kind: 'word',
+    hebrew: 'סִימָנָא לֵית לִי בְּגַוֵּיהּ',
+    translation: 'Aramaic: I have no distinguishing mark in it.',
   },
   {
     id: 'bm21b-w-siman',

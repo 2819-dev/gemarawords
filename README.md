@@ -1,6 +1,6 @@
 # Gemara Word Flashcards
 
-Paste Hebrew words, upload Excel, or load a daf. Right now one page is ready: **Bava Metzia 21b (אלו מציאות)** — words, sentences, and questions mixed together.
+Paste Hebrew or Aramaic Gemara, upload Excel, or load a daf. Right now one page is ready: **Bava Metzia 21b (אלו מציאות)** — words, sentences, and questions mixed together. Lookups use Jastrow’s Talmudic dictionary (Hebrew and Aramaic), not modern-Hebrew translate.
 
 ## Use it
 

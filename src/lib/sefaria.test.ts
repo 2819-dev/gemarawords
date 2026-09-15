@@ -12,35 +12,49 @@ describe('glossFromDefinition', () => {
 })
 
 describe('pickGloss', () => {
-  it('uses the first useful lexicon entry in API order', () => {
+  it('prefers Talmudic Jastrow over modern Klein', () => {
     const gloss = pickGloss([
       {
         parent_lexicon: 'Klein Dictionary',
-        content: { senses: [{ definition: 'to say.' }] },
+        parent_lexicon_details: { language: 'heb.modern' },
+        content: { senses: [{ definition: 'to spell a word.' }] },
       },
       {
         parent_lexicon: 'Jastrow Dictionary',
+        parent_lexicon_details: { language: 'heb.talmudic' },
+        content: { senses: [{ definition: '<i>there is, are</i>.' }] },
+      },
+    ])
+    expect(gloss).toBe('there is, are')
+  })
+
+  it('skips morphology and woe, then takes “to be”', () => {
+    const gloss = pickGloss([
+      {
+        parent_lexicon: 'Jastrow Dictionary',
+        parent_lexicon_details: { language: 'heb.talmudic' },
         content: {
           senses: [
-            {
-              definition:
-                '<i>to join, knot; to be knotted, thick;</i> b) <i>to heap up;</i>',
-            },
+            { definition: 'fut. יֶהֱוֵי ch.' },
+            { definition: '(b. h.) woe!, ah!' },
+            { definition: '<i>to exist; to be, become</i>.' },
           ],
         },
       },
     ])
-    expect(gloss).toBe('to say.')
+    expect(gloss).toBe('to exist; to be, become')
   })
 
   it('skips cross-reference-only Jastrow entries', () => {
     const gloss = pickGloss([
       {
         parent_lexicon: 'Jastrow Dictionary',
+        parent_lexicon_details: { language: 'heb.talmudic' },
         content: { senses: [{ definition: 'v. next w.' }] },
       },
       {
         parent_lexicon: 'Klein Dictionary',
+        parent_lexicon_details: { language: 'heb.modern' },
         content: { senses: [{ definition: '‘we have learned’' }] },
       },
     ])

@@ -15,11 +15,16 @@ export const handler: Handler = async (event) => {
   }
 
   let words: string[] = []
+  let lookupRef: string | undefined
   try {
-    const payload = JSON.parse(event.body || '{}') as { words?: unknown }
+    const payload = JSON.parse(event.body || '{}') as {
+      words?: unknown
+      lookupRef?: unknown
+    }
     words = Array.isArray(payload.words)
       ? payload.words.filter((word): word is string => typeof word === 'string')
       : []
+    lookupRef = typeof payload.lookupRef === 'string' ? payload.lookupRef : undefined
   } catch {
     return {
       statusCode: 400,
@@ -29,7 +34,7 @@ export const handler: Handler = async (event) => {
   }
 
   try {
-    const results = await translateWords(words)
+    const results = await translateWords(words, { lookupRef })
     return {
       statusCode: 200,
       headers: { 'Content-Type': 'application/json' },

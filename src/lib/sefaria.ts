@@ -52,7 +52,7 @@ function stripTags(html: string): string {
 function extractItalics(html: string): string[] {
   return [...html.matchAll(/<i>(.*?)<\/i>/gi)]
     .map((match) => stripTags(match[1] ?? ''))
-    .filter((text) => text.length > 3 && !/^(pa|af|ithpa|ithpe|aphel)\.?$/i.test(text))
+    .filter((text) => text.length > 3 && !/^(pa|af|ithpa|ithpe|aphel|pe|nif)\.?$/i.test(text))
 }
 
 function tidyGloss(text: string): string {
@@ -65,15 +65,32 @@ function tidyGloss(text: string): string {
   return gloss
 }
 
-function isUsefulGloss(text: string): boolean {
+function isMorphologyOnly(text: string): boolean {
+  return /^(fut\.|,?\s*fut\.|part\.|perf\.|imperat\.|inf\.|contr\.|denom\.|pl\.|f\.|m\.)/i.test(
+    text,
+  )
+}
+
+function isCrossRef(text: string): boolean {
   const lower = text.toLowerCase()
-  if (text.length < 2) {
+  return (
+    /^v\.\s/i.test(text) ||
+    lower.startsWith('see ') ||
+    lower === 'next w.' ||
+    /^same\b/i.test(text)
+  )
+}
+
+function isInterjection(text: string): boolean {
+  const plain = text.replace(/^\([^)]*\)\s*/g, '').trim()
+  return /^(woe|ah!|alas|ha!|ho!)/i.test(plain)
+}
+
+function isUsefulGloss(text: string): boolean {
+  if (text.length < 2 || !/[a-zA-Z]/.test(text)) {
     return false
   }
-  if (/^v\.\s/i.test(text) || lower.startsWith('see ') || lower === 'next w.') {
-    return false
-  }
-  return /[a-zA-Z]/.test(text)
+  return !isMorphologyOnly(text) && !isCrossRef(text) && !isInterjection(text)
 }
 
 export function glossFromDefinition(definition: string): string {
@@ -84,16 +101,41 @@ export function glossFromDefinition(definition: string): string {
   return tidyGloss(stripTags(definition))
 }
 
-function glossFromEntry(entry: unknown): string {
+function lexiconRank(entry: Record<string, unknown>): number {
+  const name = typeof entry.parent_lexicon === 'string' ? entry.parent_lexicon : ''
+  const details = asRecord(entry.parent_lexicon_details)
+  const language = typeof details?.language === 'string' ? details.language : ''
+  if (name.includes('Jastrow') && language.includes('talmudic')) {
+    return 0
+  }
+  if (name.includes('Jastrow')) {
+    return 1
+  }
+  if (name.includes('Klein')) {
+    return 2
+  }
+  return 9
+}
+
+function glossesFromEntry(entry: unknown): string[] {
   const record = asRecord(entry)
   if (!record) {
-    return ''
+    return []
   }
-  return (
-    collectDefinitions(record.content as SenseNode)
-      .map(glossFromDefinition)
-      .find(isUsefulGloss) ?? ''
-  )
+  return collectDefinitions(record.content as SenseNode)
+    .map(glossFromDefinition)
+    .filter(isUsefulGloss)
+}
+
+function scoreGloss(gloss: string): number {
+  let score = 0
+  if (/^to [a-z]/i.test(gloss)) {
+    score += 8
+  }
+  if ((gloss.match(/;/g) ?? []).length >= 3) {
+    score -= 6
+  }
+  return score
 }
 
 export function pickGloss(entries: unknown): string {
@@ -101,10 +143,37 @@ export function pickGloss(entries: unknown): string {
     return ''
   }
 
-  for (const entry of entries) {
-    const gloss = glossFromEntry(entry)
-    if (gloss) {
-      return gloss
+  const ranked = entries
+    .map((entry) => {
+      const record = asRecord(entry)
+      if (!record) {
+        return null
+      }
+      return {
+        rank: lexiconRank(record),
+        glosses: glossesFromEntry(record),
+      }
+    })
+    .filter((item): item is NonNullable<typeof item> => Boolean(item && item.glosses.length > 0))
+    .sort((a, b) => a.rank - b.rank)
+
+  const jastrow = ranked.filter((item) => item.rank <= 1)
+  const others = ranked.filter((item) => item.rank > 1)
+
+  for (const group of [jastrow, others]) {
+    let best = ''
+    let bestScore = Number.NEGATIVE_INFINITY
+    for (const item of group) {
+      for (const gloss of item.glosses) {
+        const score = scoreGloss(gloss) - item.rank
+        if (score > bestScore) {
+          best = gloss
+          bestScore = score
+        }
+      }
+    }
+    if (best) {
+      return best
     }
   }
 

@@ -2,7 +2,7 @@
 
 @theme {
   --font-sans: "Source Sans 3", ui-sans-serif, system-ui, sans-serif;
-  --font-hebrew: "Frank Ruhl Libre", "Times New Roman", serif;
+  --font-hebrew: "Noto Serif Hebrew", "Frank Ruhl Libre", "Times New Roman", serif;
   --color-parchment: #f3ead6;
   --color-parchment-dark: #e4d4b2;
   --color-ink: #2a1f14;
@@ -34,6 +34,7 @@ body {
 
 .hebrew {
   font-family: var(--font-hebrew);
+  font-feature-settings: "locl" 1;
 }
 
 .card-flip {

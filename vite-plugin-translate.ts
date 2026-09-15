@@ -29,11 +29,16 @@ export function translateApiPlugin(): Plugin {
         void (async () => {
           try {
             const raw = await readBody(req)
-            const payload = JSON.parse(raw || '{}') as { words?: unknown }
+            const payload = JSON.parse(raw || '{}') as {
+              words?: unknown
+              lookupRef?: unknown
+            }
             const words = Array.isArray(payload.words)
               ? payload.words.filter((word): word is string => typeof word === 'string')
               : []
-            const results = await translateWords(words)
+            const lookupRef =
+              typeof payload.lookupRef === 'string' ? payload.lookupRef : undefined
+            const results = await translateWords(words, { lookupRef })
             res.statusCode = 200
             res.setHeader('Content-Type', 'application/json')
             res.end(JSON.stringify({ results }))

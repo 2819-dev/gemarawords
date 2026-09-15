@@ -78,8 +78,8 @@ export function DeckScreen({
           Daf Flashcards
         </h1>
         <p className="mt-2 text-ink-soft">
-          Pick a daf, then study a mix of words, sentences, and questions.
-          Missed cards come back more often.
+          Pick a daf, then study a mix of Hebrew and Aramaic words,
+          sentences, and questions. Missed cards come back more often.
         </p>
       </header>
 
@@ -144,7 +144,8 @@ export function DeckScreen({
 
         {cards.length === 0 ? (
           <p className="rounded-2xl border border-dashed border-parchment-dark px-4 py-10 text-center text-ink-soft">
-            Load Bava Metzia 21b to get words, sentences, and questions from אלו מציאות.
+            Load Bava Metzia 21b to get Hebrew and Aramaic words, sentences,
+            and questions from אלו מציאות.
           </p>
         ) : (
           <ul className="flex flex-col gap-3">
@@ -199,7 +200,7 @@ export function DeckScreen({
 
       <details className="rounded-2xl border border-parchment-dark bg-card p-4 shadow-sm">
         <summary className="cursor-pointer text-sm font-semibold">
-          Or paste / upload extra words
+          Or paste / upload extra Hebrew or Aramaic
         </summary>
         <form
           onSubmit={handleSubmit}
@@ -226,7 +227,7 @@ export function DeckScreen({
             lang="he"
             value={paste}
             onChange={(event) => onPasteChange(event.target.value)}
-            placeholder="הדבק מילים כאן"
+            placeholder="הדבק מילים בעברית או בארמית"
             rows={4}
             className="hebrew w-full resize-y rounded-xl border border-parchment-dark bg-parchment px-3 py-3 text-right text-2xl leading-relaxed text-ink outline-none ring-gold/40 focus:ring-2"
           />

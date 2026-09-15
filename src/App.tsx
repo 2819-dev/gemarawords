@@ -49,7 +49,10 @@ export default function App() {
       const response = await fetch('/api/translate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ words: needsLookup.map((card) => card.hebrew) }),
+        body: JSON.stringify({
+          words: needsLookup.map((card) => card.hebrew),
+          lookupRef: PAGES.find((page) => page.id === selectedPageId)?.lookupRef,
+        }),
       })
       const data = (await response.json()) as {
         results?: TranslateResult[]
@@ -132,7 +135,7 @@ export default function App() {
   async function handleAdd() {
     const result = addWordsToDeck(cards, paste)
     setPaste('')
-    await ingestUpdate(result, 'Paste some Hebrew words first.')
+    await ingestUpdate(result, 'Paste some Hebrew or Aramaic words first.')
   }
 
   async function handleUpload(file: File) {
@@ -142,7 +145,7 @@ export default function App() {
       const entries: WordEntry[] = await parseSpreadsheetFile(file)
       await ingestUpdate(
         addEntriesToDeck(cards, entries),
-        'No Hebrew words found in that file.',
+        'No Hebrew or Aramaic words found in that file.',
       )
     } catch (uploadError) {
       setNotice('')
