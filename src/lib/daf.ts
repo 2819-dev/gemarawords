@@ -170,7 +170,7 @@ const WORDS: PackItem[] = [
     'everyone agrees — no מחלוקת',
     ['everyone agrees', 'no machlokes', 'kuli alma'],
   ),
-  word('zuto', 'זוּטוֹ שֶׁל יָם', 'the tide of the sea', ['tide', 'sea']),
+  word('zuto', 'זוּטוֹ שֶׁל יָם', 'the wash of the sea', ['wash', 'tide', 'sea']),
   word('river', 'שְׁלוּלִיתוֹ שֶׁל נָהָר', 'the overflow of a river', [
     'overflow',
     'river',
@@ -190,7 +190,7 @@ const WORDS: PackItem[] = [
   word(
     'aveidah-midaas',
     'אֲבֵידָה מִדַּעַת',
-    'an אֲבֵידָה with knowledge',
+    'an אֲבֵידָה he knew he was leaving',
     ['with knowledge', 'he knew', 'midaas'],
   ),
   word('maos', 'מָעוֹת מְפוּזָּרוֹת', 'scattered coins', ['scattered coins']),
@@ -200,9 +200,10 @@ const WORDS: PackItem[] = [
     'a person is used to feeling his pocket',
     ['feeling his pocket', 'checks his pocket', 'pocket'],
   ),
-  word('deveilah', 'עִיגּוּלֵי דְבֵילָה', 'rounds of dried figs', [
+  word('deveilah', 'עִיגּוּלֵי דְבֵילָה', 'cakes of dried figs', [
     'dried figs',
     'fig cakes',
+    'cakes',
   ]),
   word('loaves', 'כִּכָּרוֹת שֶׁל נַחְתּוֹם', "a baker's loaves", [
     'baker',
@@ -226,7 +227,7 @@ const WORDS: PackItem[] = [
   word(
     'nemushot',
     'נָמוֹשׁוֹת',
-    'the last ones through the field',
+    'the last people through the field',
     ['last ones', 'elderly', 'leket after leket', 'nemushot'],
   ),
   word('ketziot', 'קְצִיעוֹת', 'dried figs', ['dried figs']),
@@ -253,8 +254,8 @@ const WORDS: PackItem[] = [
   word(
     'maknishata',
     'מַכְנַשְׁתָּא דְּבֵי דָרֵי',
-    'leftover kernels on the goren',
-    ['leftover', 'goren', 'threshing', 'kernels'],
+    'leftover grain on the threshing floor',
+    ['leftover', 'threshing floor', 'grain', 'sweepings', 'goren'],
   ),
   word(
     'harei-shelo',
@@ -325,8 +326,8 @@ const SENTENCES: PackItem[] = [
   sentence(
     'peiros',
     'תָּא שְׁמַע: פֵּירוֹת מְפוּזָּרִין... הָכָא בְּמַכְנַשְׁתָּא דְּבֵי דָרֵי עָסְקִינַן, דַּאֲבֵידָה מִדַּעַת הִיא.',
-    'תָּא שְׁמַע from פֵּירוֹת מְפוּזָּרִין — not a ראיה for רָבָא. It’s leftover on the goren, an אֲבֵידָה מִדַּעַת.',
-    ['ta shema', 'scattered fruit', 'midaas', 'goren'],
+    'תָּא שְׁמַע from פֵּירוֹת מְפוּזָּרִין — not a ראיה for רָבָא. It’s leftover grain on the threshing floor, an אֲבֵידָה מִדַּעַת.',
+    ['ta shema', 'scattered fruit', 'midaas', 'threshing floor'],
   ),
   sentence(
     'coins',
@@ -337,7 +338,7 @@ const SENTENCES: PackItem[] = [
   sentence(
     'figs-loaves',
     'עִיגּוּלֵי דְבֵילָה וְכִכָּרוֹת שֶׁל נַחְתּוֹם – הֲרֵי אֵלּוּ שֶׁלּוֹ... אַגַּב דְּיַקִּירֵי מִידָּע יָדַע בְּהוּ.',
-    'Rounds of dried figs and a baker’s loaves are שלו — they’re heavy, so he knows when they fall.',
+    'Cakes of dried figs and a baker’s loaves are שלו — they’re heavy, so he knows when they fall.',
     ['heavy', 'figs', 'loaves', 'he knows'],
   ),
   sentence(
@@ -444,8 +445,8 @@ const QUESTIONS: PackItem[] = [
     'peiros',
     'פֵּירוֹת מְפוּזָּרִין',
     'Why isn’t פֵּירוֹת מְפוּזָּרִין a ראיה for רָבָא?',
-    'It’s leftover on the goren — an אֲבֵידָה מִדַּעַת, not יֵאוּשׁ שֶׁלֹּא מִדַּעַת.',
-    ['midaas', 'goren', 'knew', 'not shelo'],
+    'It’s leftover grain on the threshing floor — an אֲבֵידָה מִדַּעַת, not יֵאוּשׁ שֶׁלֹּא מִדַּעַת.',
+    ['midaas', 'threshing floor', 'knew', 'not shelo'],
   ),
   question(
     'pocket',
@@ -479,8 +480,8 @@ const QUESTIONS: PackItem[] = [
     'maknishata',
     'מַכְנַשְׁתָּא דְּבֵי דָרֵי',
     'What is מַכְנַשְׁתָּא דְּבֵי דָרֵי, and why isn’t it a ראיה for רָבָא?',
-    'Leftover kernels on the goren. That’s an אֲבֵידָה מִדַּעַת — he knew he was leaving them.',
-    ['goren', 'leftover', 'midaas', 'knew'],
+    'Leftover grain on the threshing floor. That’s an אֲבֵידָה מִדַּעַת — he knew he was leaving it.',
+    ['threshing floor', 'leftover', 'grain', 'midaas', 'knew'],
   ),
   question(
     'heavy',

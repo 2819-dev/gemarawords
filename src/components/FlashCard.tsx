@@ -19,7 +19,7 @@ export function FlashCard({ card }: FlashCardProps) {
       <KindBadge kind={card.kind} />
       <MixedText
         text={prompt}
-        className="mt-5 max-w-lg text-center text-[1.35rem] font-medium leading-snug text-ink sm:text-[1.7rem]"
+        className="mt-5 block w-full max-w-lg text-left text-[1.35rem] font-medium leading-snug text-ink sm:text-[1.7rem]"
         hebrewClassName="text-[1.7rem] font-medium sm:text-[2rem]"
       />
       {showSource ? (

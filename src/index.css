@@ -51,6 +51,18 @@ body {
   font-feature-settings: "locl" 1;
 }
 
+.hebrew-phrase {
+  display: inline-flex;
+  flex-flow: row wrap;
+  column-gap: 0.33em;
+  unicode-bidi: isolate;
+  vertical-align: baseline;
+}
+
+.hebrew-phrase > .hebrew {
+  unicode-bidi: isolate;
+}
+
 .app-shell {
   display: grid;
   grid-template-columns: 10px minmax(0, 1fr);

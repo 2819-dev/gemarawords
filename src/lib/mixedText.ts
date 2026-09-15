@@ -5,6 +5,10 @@ export type MixedPart = {
   hebrew: boolean
 }
 
+export type MixedGroup =
+  | { hebrew: false; text: string }
+  | { hebrew: true; words: string[] }
+
 export function splitMixedText(text: string): MixedPart[] {
   const parts: MixedPart[] = []
   let buffer = ''
@@ -31,6 +35,40 @@ export function splitMixedText(text: string): MixedPart[] {
   }
 
   return parts
+}
+
+export function groupMixedParts(text: string): MixedGroup[] {
+  const parts = splitMixedText(text)
+  const groups: MixedGroup[] = []
+  let index = 0
+
+  while (index < parts.length) {
+    const part = parts[index]
+    if (!part) {
+      break
+    }
+    if (!part.hebrew) {
+      groups.push({ hebrew: false, text: part.text })
+      index += 1
+      continue
+    }
+
+    const words = [part.text]
+    index += 1
+    while (index < parts.length) {
+      const gap = parts[index]
+      const next = parts[index + 1]
+      if (gap && !gap.hebrew && gap.text.trim() === '' && next?.hebrew) {
+        words.push(next.text)
+        index += 2
+        continue
+      }
+      break
+    }
+    groups.push({ hebrew: true, words })
+  }
+
+  return groups
 }
 
 export function hebrewRuns(text: string): string[] {

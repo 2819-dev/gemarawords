@@ -30,8 +30,13 @@ describe('Bava Metzia 21b pack', () => {
         .every((card) => card.prompt && /[\u0590-\u05FF]/.test(card.prompt)),
     ).toBe(true)
     expect(pack.some((card) => /unconscious/i.test(card.translation))).toBe(false)
+    expect(pack.some((card) => /goren/i.test(card.translation))).toBe(false)
     const shelo = pack.find((card) => card.hebrew === 'יֵאוּשׁ שֶׁלֹּא מִדַּעַת')
     expect(shelo?.translation).toMatch(/Giving up hope without knowledge/i)
+    const threshing = pack.find((card) => card.hebrew === 'מַכְנַשְׁתָּא דְּבֵי דָרֵי')
+    expect(threshing?.translation).toMatch(/threshing floor/i)
+    const figs = pack.find((card) => card.hebrew === 'עִיגּוּלֵי דְבֵילָה')
+    expect(figs?.translation).toMatch(/cakes of dried figs/i)
     expect(new Set(pack.map((card) => card.id)).size).toBe(pack.length)
   })
 
