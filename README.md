@@ -4,8 +4,8 @@ Paste Hebrew (or Aramaic) Gemara words, get translations, then study them as fla
 
 ## Use it
 
-1. Paste words (spaces or new lines).
-2. Add words — translations fill in from [Sefaria](https://www.sefaria.org/) dictionaries (Jastrow first), with a machine-translate fallback.
+1. Paste words, or upload an `.xlsx` / `.csv` (one word per row, optional second column for the translation).
+2. Add words — missing translations fill in from [Sefaria](https://www.sefaria.org/) dictionaries (Jastrow first), with a machine-translate fallback.
 3. Edit any gloss that looks wrong.
 4. Press **Start**.
 5. Tap a card to see the translation, then mark **Correct** or **Incorrect**.

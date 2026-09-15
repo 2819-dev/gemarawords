@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { addWordsToDeck, collectTokens, normalizeWord } from './words.ts'
+import { addEntriesToDeck, addWordsToDeck, collectTokens, normalizeWord } from './words.ts'
 
 describe('normalizeWord', () => {
   it('treats nikkud and plain consonants as the same word', () => {
@@ -37,5 +37,19 @@ describe('addWordsToDeck', () => {
     const second = addWordsToDeck(first.cards, 'שָׁלוֹם')
     expect(second.added).toHaveLength(0)
     expect(second.skipped).toBe(1)
+  })
+})
+
+describe('addEntriesToDeck', () => {
+  it('keeps a spreadsheet translation and does not split a phrase', () => {
+    const result = addEntriesToDeck([], [
+      { hebrew: 'בית המקדש', translation: 'the Temple' },
+      { hebrew: 'בית המקדש', translation: 'ignored duplicate' },
+    ])
+    expect(result.skipped).toBe(1)
+    expect(result.added).toHaveLength(1)
+    expect(result.added[0]?.hebrew).toBe('בית המקדש')
+    expect(result.added[0]?.translation).toBe('the Temple')
+    expect(result.added[0]?.source).toBe('manual')
   })
 })

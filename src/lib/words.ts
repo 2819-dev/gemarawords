@@ -1,5 +1,16 @@
 import type { Card } from './types.ts'
 
+export type WordEntry = {
+  hebrew: string
+  translation?: string
+}
+
+export type DeckUpdate = {
+  cards: Card[]
+  added: Card[]
+  skipped: number
+}
+
 const NIKKUD = /[\u0591-\u05C7]/g
 const EDGE_PUNCT = /^[,.;:]+|[,.;:]+$/g
 
@@ -18,28 +29,30 @@ export function collectTokens(input: string): string[] {
     .filter(Boolean)
 }
 
-export function createCard(hebrew: string): Card {
+export function createCard(hebrew: string, translation?: string): Card {
+  const trimmed = typeof translation === 'string' ? translation.trim() : ''
   return {
     id: normalizeWord(hebrew),
     hebrew,
-    translation: '',
+    translation: trimmed,
     weight: 1,
     consecutiveCorrect: 0,
-    source: 'none',
+    source: trimmed ? 'manual' : 'none',
   }
 }
 
-export function addWordsToDeck(
+export function addEntriesToDeck(
   existing: Card[],
-  input: string,
-): { cards: Card[]; added: Card[]; skipped: number } {
+  entries: WordEntry[],
+): DeckUpdate {
   const existingIds = new Set(existing.map((card) => card.id))
   const seen = new Set(existingIds)
   const added: Card[] = []
   let skipped = 0
 
-  for (const token of collectTokens(input)) {
-    const id = normalizeWord(token)
+  for (const entry of entries) {
+    const hebrew = entry.hebrew.trim().replace(EDGE_PUNCT, '')
+    const id = normalizeWord(hebrew)
     if (!id) {
       continue
     }
@@ -48,7 +61,7 @@ export function addWordsToDeck(
       continue
     }
     seen.add(id)
-    added.push(createCard(token))
+    added.push(createCard(hebrew, entry.translation ?? ''))
   }
 
   return {
@@ -56,4 +69,11 @@ export function addWordsToDeck(
     added,
     skipped,
   }
+}
+
+export function addWordsToDeck(existing: Card[], input: string): DeckUpdate {
+  return addEntriesToDeck(
+    existing,
+    collectTokens(input).map((hebrew) => ({ hebrew })),
+  )
 }

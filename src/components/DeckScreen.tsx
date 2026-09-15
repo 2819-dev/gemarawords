@@ -1,4 +1,4 @@
-import type { FormEvent } from 'react'
+import { useRef, useState, type DragEvent, type FormEvent } from 'react'
 import type { Card } from '../lib/types.ts'
 
 type DeckScreenProps = {
@@ -9,6 +9,7 @@ type DeckScreenProps = {
   error: string
   onPasteChange: (value: string) => void
   onAdd: () => void
+  onUpload: (file: File) => void
   onTranslationChange: (id: string, translation: string) => void
   onRemove: (id: string) => void
   onClear: () => void
@@ -23,17 +24,33 @@ export function DeckScreen({
   error,
   onPasteChange,
   onAdd,
+  onUpload,
   onTranslationChange,
   onRemove,
   onClear,
   onStart,
 }: DeckScreenProps) {
+  const fileInput = useRef<HTMLInputElement>(null)
+  const [dropping, setDropping] = useState(false)
   const missing = cards.filter((card) => !card.translation.trim()).length
   const canStart = cards.length > 0 && missing === 0 && !translating
 
   function handleSubmit(event: FormEvent) {
     event.preventDefault()
     onAdd()
+  }
+
+  function takeFile(file: File | undefined) {
+    if (!file || translating) {
+      return
+    }
+    onUpload(file)
+  }
+
+  function handleDrop(event: DragEvent<HTMLFormElement>) {
+    event.preventDefault()
+    setDropping(false)
+    takeFile(event.dataTransfer.files[0])
   }
 
   return (
@@ -46,14 +63,32 @@ export function DeckScreen({
           Word Flashcards
         </h1>
         <p className="mt-2 text-ink-soft">
-          Paste Hebrew words, check the translations, then start. Missed words
-          come back more often until you keep getting them right.
+          Paste Hebrew words or upload an Excel file, check the translations,
+          then start. Missed words come back more often until you keep getting
+          them right.
         </p>
       </header>
 
       <form
         onSubmit={handleSubmit}
-        className="rounded-2xl border border-parchment-dark bg-card p-4 shadow-sm"
+        onDragEnter={(event) => {
+          event.preventDefault()
+          setDropping(true)
+        }}
+        onDragOver={(event) => {
+          event.preventDefault()
+          setDropping(true)
+        }}
+        onDragLeave={(event) => {
+          if (event.currentTarget.contains(event.relatedTarget as Node)) {
+            return
+          }
+          setDropping(false)
+        }}
+        onDrop={handleDrop}
+        className={`rounded-2xl border bg-card p-4 shadow-sm ${
+          dropping ? 'border-burgundy border-dashed' : 'border-parchment-dark'
+        }`}
       >
         <label htmlFor="words" className="mb-2 block text-sm font-semibold">
           Add words
@@ -76,8 +111,26 @@ export function DeckScreen({
           >
             {translating ? 'Looking up…' : 'Add words'}
           </button>
+          <input
+            ref={fileInput}
+            type="file"
+            accept=".xlsx,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/csv"
+            className="sr-only"
+            onChange={(event) => {
+              takeFile(event.target.files?.[0])
+              event.target.value = ''
+            }}
+          />
+          <button
+            type="button"
+            disabled={translating}
+            onClick={() => fileInput.current?.click()}
+            className="rounded-full border border-ink px-5 py-2.5 text-sm font-semibold text-ink disabled:opacity-50"
+          >
+            Upload Excel
+          </button>
           <p className="text-sm text-ink-soft">
-            Duplicates are kept as one card.
+            .xlsx or .csv. Duplicates stay one card.
           </p>
         </div>
       </form>
@@ -108,7 +161,7 @@ export function DeckScreen({
 
         {cards.length === 0 ? (
           <p className="rounded-2xl border border-dashed border-parchment-dark px-4 py-10 text-center text-ink-soft">
-            No words yet. Paste a list from your Gemara and add them.
+            No words yet. Paste a list or upload an Excel file from your Gemara.
           </p>
         ) : (
           <ul className="flex flex-col gap-3">

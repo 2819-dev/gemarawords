@@ -2,9 +2,16 @@ import { useEffect, useMemo, useState } from 'react'
 import { DeckScreen } from './components/DeckScreen.tsx'
 import { StudyScreen } from './components/StudyScreen.tsx'
 import { gradeCard, pickNextCard } from './lib/scheduler.ts'
+import { parseSpreadsheetFile } from './lib/spreadsheet.ts'
 import { loadDeck, saveDeck } from './lib/storage.ts'
 import type { Card, TranslateResult } from './lib/types.ts'
-import { addWordsToDeck, normalizeWord } from './lib/words.ts'
+import {
+  addEntriesToDeck,
+  addWordsToDeck,
+  normalizeWord,
+  type DeckUpdate,
+  type WordEntry,
+} from './lib/words.ts'
 
 type Screen = 'deck' | 'study'
 
@@ -28,27 +35,9 @@ export default function App() {
     [cards, currentId],
   )
 
-  async function handleAdd() {
-    setError('')
-    const result = addWordsToDeck(cards, paste)
-    setCards(result.cards)
-    setPaste('')
-
-    const parts: string[] = []
-    if (result.added.length > 0) {
-      parts.push(`Added ${result.added.length} word${result.added.length === 1 ? '' : 's'}.`)
-    }
-    if (result.skipped > 0) {
-      parts.push(
-        `Skipped ${result.skipped} duplicate${result.skipped === 1 ? '' : 's'}.`,
-      )
-    }
-    if (result.added.length === 0 && result.skipped === 0) {
-      parts.push('Paste some Hebrew words first.')
-    }
-    setNotice(parts.join(' '))
-
-    if (result.added.length === 0) {
+  async function fillMissingTranslations(added: Card[]) {
+    const needsLookup = added.filter((card) => !card.translation.trim())
+    if (needsLookup.length === 0) {
       return
     }
 
@@ -57,7 +46,7 @@ export default function App() {
       const response = await fetch('/api/translate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ words: result.added.map((card) => card.hebrew) }),
+        body: JSON.stringify({ words: needsLookup.map((card) => card.hebrew) }),
       })
       const data = (await response.json()) as {
         results?: TranslateResult[]
@@ -90,6 +79,54 @@ export default function App() {
       )
     } finally {
       setTranslating(false)
+    }
+  }
+
+  async function ingestUpdate(result: DeckUpdate, emptyMessage: string) {
+    setError('')
+    setCards(result.cards)
+
+    const parts: string[] = []
+    if (result.added.length > 0) {
+      parts.push(`Added ${result.added.length} word${result.added.length === 1 ? '' : 's'}.`)
+    }
+    if (result.skipped > 0) {
+      parts.push(
+        `Skipped ${result.skipped} duplicate${result.skipped === 1 ? '' : 's'}.`,
+      )
+    }
+    if (result.added.length === 0 && result.skipped === 0) {
+      parts.push(emptyMessage)
+    }
+    setNotice(parts.join(' '))
+
+    if (result.added.length > 0) {
+      await fillMissingTranslations(result.added)
+    }
+  }
+
+  async function handleAdd() {
+    const result = addWordsToDeck(cards, paste)
+    setPaste('')
+    await ingestUpdate(result, 'Paste some Hebrew words first.')
+  }
+
+  async function handleUpload(file: File) {
+    setError('')
+    setNotice(`Reading ${file.name}…`)
+    try {
+      const entries: WordEntry[] = await parseSpreadsheetFile(file)
+      await ingestUpdate(
+        addEntriesToDeck(cards, entries),
+        'No Hebrew words found in that file.',
+      )
+    } catch (uploadError) {
+      setNotice('')
+      setError(
+        uploadError instanceof Error
+          ? uploadError.message
+          : 'Could not read that spreadsheet.',
+      )
     }
   }
 
@@ -163,6 +200,7 @@ export default function App() {
       error={error}
       onPasteChange={setPaste}
       onAdd={() => void handleAdd()}
+      onUpload={(file) => void handleUpload(file)}
       onTranslationChange={handleTranslationChange}
       onRemove={handleRemove}
       onClear={handleClear}
