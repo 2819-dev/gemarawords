@@ -96,6 +96,19 @@ describe('checkAnswer', () => {
     ).toBe(false)
   })
 
+  it('accepts Hebrew that appears in the official answer', () => {
+    const result = checkAnswer(
+      card({
+        kind: 'question',
+        hebrew: 'אַבָּיֵי',
+        prompt: 'What does אַבָּיֵי hold?',
+        translation: 'לָא הָוֵי יֵאוּשׁ — he never actually gave up hope',
+      }),
+      'לא הוי יאוש',
+    )
+    expect(result.correct).toBe(true)
+  })
+
   it('treats ye’ush and yeush as the same', () => {
     const result = checkAnswer(
       card({

@@ -102,8 +102,16 @@ const WORDS: PackItem[] = [
     'Giving up hope without knowledge',
     ['giving up hope', 'without knowledge', 'shelo midaas', 'didnt know'],
   ),
-  word('abaye', 'אַבָּיֵי', 'Abaye', ['abaye']),
-  word('rava', 'רָבָא', 'Rava', ['rava']),
+  word('abaye', 'אַבָּיֵי', 'the Amora who says לָא הָוֵי יֵאוּשׁ', [
+    'abaye',
+    'lo havei',
+    'not yeush',
+  ]),
+  word('rava', 'רָבָא', 'the Amora who says הָוֵי יֵאוּשׁ', [
+    'rava',
+    'havei yeush',
+    'is yeush',
+  ]),
   word('lo-havei', 'לָא הָוֵי יֵאוּשׁ', "It's not יֵאוּשׁ", [
     'not yeush',
     'not giving up hope',
@@ -114,7 +122,7 @@ const WORDS: PackItem[] = [
     'it is',
     'havei yeush',
   ]),
-  word('havei-verb', 'הָוֵי', 'is', ['is', 'was', 'it is']),
+  word('havei-verb', 'הָוֵי', 'it is', ['is', 'was', 'it is', 'havei']),
   word('ait', 'אִית', 'there is', ['there is', 'there are']),
   word('leit', 'לֵית', 'there is not', ['there is not', "there isn't"]),
   word('nami', 'נָמֵי', 'also', ['also', 'too']),
@@ -126,7 +134,11 @@ const WORDS: PackItem[] = [
     'came into his hand',
     'came to his hand',
   ]),
-  word('issura', 'בְּאִיסּוּרָא', 'in issur', ['issur', 'forbidden']),
+  word('issura', 'בְּאִיסּוּרָא', 'in issur — while it was still אסור', [
+    'issur',
+    'forbidden',
+    'assur',
+  ]),
   word(
     'simana-leit',
     'סִימָנָא לֵית לִי בְּגַוֵּיהּ',
@@ -145,6 +157,12 @@ const WORDS: PackItem[] = [
     'דָּבָר שֶׁאֵין בּוֹ סִימָן',
     'something that has no סִימָן',
     ['no siman', 'no mark'],
+  ),
+  word(
+    'kuli-alma-short',
+    'כּוּלֵּי עָלְמָא',
+    'everyone — the whole world',
+    ['everyone', 'kuli alma', 'whole world'],
   ),
   word(
     'kuli-alma',
@@ -200,9 +218,10 @@ const WORDS: PackItem[] = [
     'shuls and בָּתֵּי מִדְרָשׁ',
     ['shuls', 'batei midrash', 'shul'],
   ),
-  word('leket', 'לֶקֶט', 'לֶקֶט — leftover stalks for an עני', [
+  word('leket', 'לֶקֶט', 'leftover stalks left for an עני', [
     'leket',
     'gleanings',
+    'ani',
   ]),
   word(
     'nemushot',
@@ -223,8 +242,59 @@ const WORDS: PackItem[] = [
     'a fig becomes repulsive when it falls',
     ['fig', 'repulsive', 'falls'],
   ),
-  word('ganav', 'גַּנָּב', 'a גנב — steals in secret', ['ganav', 'thief', 'secret']),
-  word('gazlan', 'גַּזְלָן', 'a גזלן — takes openly', ['gazlan', 'openly']),
+  word('af-al-gav', 'אַף עַל גַּב', 'even though', ['even though', 'even if', 'af al gav']),
+  word('ki-pligi', 'כִּי פְּלִיגִי', 'they argue — this is the מחלוקת', [
+    'they argue',
+    'machlokes',
+    'pligi',
+  ]),
+  word('pligi', 'פְּלִיגִי', 'they argue', ['argue', 'machlokes', 'pligi']),
+  word('askinan', 'עָסְקִינַן', 'we are dealing with', ['dealing with', 'askinan']),
+  word(
+    'maknishata',
+    'מַכְנַשְׁתָּא דְּבֵי דָרֵי',
+    'leftover kernels on the goren',
+    ['leftover', 'goren', 'threshing', 'kernels'],
+  ),
+  word(
+    'harei-shelo',
+    'הֲרֵי אֵלּוּ שֶׁלּוֹ',
+    'these belong to the finder',
+    ['belong to the finder', 'his', 'shelo'],
+  ),
+  word('mida-yada', 'מִידָּע יָדַע', 'he definitely knows', [
+    'he knows',
+    'definitely knows',
+    'mida yada',
+  ]),
+  word('yakirei', 'אַגַּב דְּיַקִּירֵי', 'because they are heavy', [
+    'heavy',
+    'yakirei',
+  ]),
+  word('chashivei', 'אַגַּב דַּחֲשִׁיבִי', 'because they are important', [
+    'important',
+    'chashivei',
+  ]),
+  word(
+    'kava',
+    'כַּבָּא דְחִטֵּי',
+    'a kav of wheat',
+    ['kav', 'wheat', 'kava'],
+  ),
+  word('ika', 'אִיכָּא', 'there is', ['there is', 'there are', 'ika']),
+  word('shani', 'שָׁאנֵי', "it's different", ['different', 'shani']),
+  word('nehi', 'נְהִי', 'granted — even so', ['granted', 'even so', 'nehi']),
+  word('mityaashin', 'מִתְיָאֲשִׁין', 'they give up hope', [
+    'give up hope',
+    'mityaashin',
+  ]),
+  word(
+    'lo-yada-nafal',
+    'לָא יָדַע דִּנְפַל מִינֵּיהּ',
+    "he didn't know it fell from him",
+    ['didnt know', 'fell', 'lo yada'],
+  ),
+  word('agav', 'אַגַּב', 'because of / on account of', ['because', 'agav', 'on account']),
 ]
 
 const SENTENCES: PackItem[] = [
@@ -312,6 +382,12 @@ const SENTENCES: PackItem[] = [
     'רב פפא: a fig becomes repulsive when it falls.',
     ['fig', 'repulsive', 'pappa'],
   ),
+  sentence(
+    'kava',
+    'הָהוּא גַּבְרָא דְּנָפֵיל לֵיהּ כַּבָּא דְחִטֵּי לְגוֹ צִיבּוּרָא... מֵימָר אָמַר: סִימָנָא לֵית לִי בְּגַוֵּיהּ.',
+    'A man whose kav of wheat fell into a pile: he’ll say סִימָנָא לֵית לִי בְּגַוֵּיהּ and give up hope. That’s רָבָא’s mashal.',
+    ['kav', 'wheat', 'no siman', 'give up hope', 'rava'],
+  ),
 ]
 
 const QUESTIONS: PackItem[] = [
@@ -391,6 +467,55 @@ const QUESTIONS: PackItem[] = [
     'Why are olives under the tree אסור, but a fallen תאנה מותר?',
     'By olives, חָזוּתוֹ מוֹכִיחַ עָלָיו. A תאנה עִם נְפִילָתָהּ נִמְאֶסֶת.',
     ['chazuto', 'look proves', 'fig', 'repulsive'],
+  ),
+  question(
+    'harei',
+    'הֲרֵי אֵלּוּ שֶׁלּוֹ',
+    'What does הֲרֵי אֵלּוּ שֶׁלּוֹ mean?',
+    'These belong to the finder — he may keep them.',
+    ['finder', 'keep', 'his', 'shelo'],
+  ),
+  question(
+    'maknishata',
+    'מַכְנַשְׁתָּא דְּבֵי דָרֵי',
+    'What is מַכְנַשְׁתָּא דְּבֵי דָרֵי, and why isn’t it a ראיה for רָבָא?',
+    'Leftover kernels on the goren. That’s an אֲבֵידָה מִדַּעַת — he knew he was leaving them.',
+    ['goren', 'leftover', 'midaas', 'knew'],
+  ),
+  question(
+    'heavy',
+    'אַגַּב דְּיַקִּירֵי',
+    'Why are עִיגּוּלֵי דְבֵילָה and כִּכָּרוֹת שֶׁל נַחְתּוֹם שלו of the finder?',
+    'אַגַּב דְּיַקִּירֵי — they’re heavy, so מִידָּע יָדַע when they fall. It’s not שֶׁלֹּא מִדַּעַת.',
+    ['heavy', 'knows', 'not shelo'],
+  ),
+  question(
+    'argaman',
+    'אַגַּב דַּחֲשִׁיבִי',
+    'Why are לְשׁוֹנוֹת שֶׁל אַרְגָּמָן שלו of the finder?',
+    'אַגַּב דַּחֲשִׁיבִי — they’re important, so he feels around for them. He knows they fell.',
+    ['important', 'feels', 'knows'],
+  ),
+  question(
+    'kava',
+    'כַּבָּא דְחִטֵּי',
+    'What mashal does רָבָא give for why a person gives up hope on a דָּבָר שֶׁאֵין בּוֹ סִימָן?',
+    'A kav of wheat that fell into a pile. He can’t pick out his own, so he says סִימָנָא לֵית לִי בְּגַוֵּיהּ and gives up hope.',
+    ['kav', 'wheat', 'pile', 'no siman', 'give up hope'],
+  ),
+  question(
+    'af-al-gav',
+    'אַף עַל גַּב',
+    'What does אַף עַל גַּב mean?',
+    'Even though.',
+    ['even though', 'even if'],
+  ),
+  question(
+    'aniyim',
+    'עֲנִיִּים בְּדוּכְתָּא אַחְרִיתָא',
+    'After the נָמוֹשׁוֹת, why is the לֶקֶט מותר even though עניים somewhere else didn’t know?',
+    'The עניים here already gave up hope, and the ones elsewhere assumed the local עניים would take it.',
+    ['gave up hope', 'local', 'assumed', 'mutar'],
   ),
 ]
 

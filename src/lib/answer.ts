@@ -122,6 +122,10 @@ export function checkAnswer(card: Card, raw: string): AnswerCheck {
     return { correct: true, reason: 'exact' }
   }
 
+  if (matchesHebrewInAnswer(card, user)) {
+    return { correct: true, reason: 'phrase' }
+  }
+
   if (isPhraseMatch(expected, user)) {
     return { correct: true, reason: 'phrase' }
   }
@@ -151,6 +155,16 @@ export function checkAnswer(card: Card, raw: string): AnswerCheck {
   return { correct: false, reason: 'miss' }
 }
 
+function matchesHebrewInAnswer(card: Card, user: string): boolean {
+  if (!/[\u0590-\u05ff]/.test(user)) {
+    return false
+  }
+  if (user === normalizeAnswer(card.hebrew)) {
+    return false
+  }
+  const expected = normalizeAnswer(card.translation)
+  return expected === user || hasPhrase(expected, user)
+}
 function polarity(text: string): 'yes' | 'no' | null {
   if (/^(yes|yeah|yep|yea)\b/.test(text)) {
     return 'yes'

@@ -141,59 +141,60 @@ export function DeckScreen({
         </div>
         {cards.length > 0 ? (
           <p className="text-sm text-ink-soft">
-            {wordCount} words · {sentenceCount} sentences · {questionCount} questions
+            {wordCount} words · {sentenceCount} Gemara · {questionCount} questions
           </p>
         ) : null}
 
         {cards.length === 0 ? (
           <p className="rounded-2xl border border-dashed border-parchment-dark px-4 py-10 text-center text-ink-soft">
             Load Bava Metzia 21b to get Hebrew and Aramaic words and phrases,
-            sentences, and questions from אלו מציאות. If a piece only makes
-            sense as part of an expression, it stays as that expression.
+            lines of Gemara, and questions from אלו מציאות.
           </p>
         ) : (
-          <ul className="flex flex-col gap-3">
-            {cards.map((card) => (
-              <li
-                key={card.id}
-                className="rounded-2xl border border-parchment-dark bg-card p-4 shadow-sm"
-              >
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <p className="text-xs font-semibold uppercase tracking-wide text-ink-soft">
-                      {card.kind === 'sentence' ? 'gemara' : card.kind}
-                    </p>
-                    <p className="mt-1 text-lg text-ink">
-                      <MixedText
-                        text={questionFor(card)}
-                        hebrewClassName="text-xl font-medium"
-                      />
-                    </p>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => onRemove(card.id)}
-                    className="text-sm text-ink-soft hover:text-brick"
-                    aria-label="Remove card"
+          groupedCards(cards).map((group) => (
+            <div key={group.title} className="flex flex-col gap-3">
+              <h3 className="mt-2 text-sm font-semibold uppercase tracking-wide text-ink-soft">
+                {group.title}
+              </h3>
+              <ul className="flex flex-col gap-3">
+                {group.cards.map((card) => (
+                  <li
+                    key={card.id}
+                    className="rounded-2xl border border-parchment-dark bg-card p-4 shadow-sm"
                   >
-                    Remove
-                  </button>
-                </div>
-                <label className="mt-3 block text-xs font-semibold uppercase tracking-wide text-ink-soft">
-                  Answer
-                </label>
-                <textarea
-                  dir="ltr"
-                  value={card.translation}
-                  onChange={(event) =>
-                    onTranslationChange(card.id, event.target.value)
-                  }
-                  rows={card.kind === 'word' ? 2 : 3}
-                  className="mt-1 w-full rounded-xl border border-parchment-dark bg-parchment px-3 py-2 text-ink outline-none ring-gold/40 focus:ring-2"
-                />
-              </li>
-            ))}
-          </ul>
+                    <div className="flex items-start justify-between gap-3">
+                      <p className="mt-1 text-lg text-ink">
+                        <MixedText
+                          text={questionFor(card)}
+                          hebrewClassName="text-xl font-medium"
+                        />
+                      </p>
+                      <button
+                        type="button"
+                        onClick={() => onRemove(card.id)}
+                        className="shrink-0 text-sm text-ink-soft hover:text-brick"
+                        aria-label="Remove card"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                    <label className="mt-3 block text-xs font-semibold uppercase tracking-wide text-ink-soft">
+                      Answer
+                    </label>
+                    <textarea
+                      dir="ltr"
+                      value={card.translation}
+                      onChange={(event) =>
+                        onTranslationChange(card.id, event.target.value)
+                      }
+                      rows={card.kind === 'word' ? 2 : 3}
+                      className="mt-1 w-full rounded-xl border border-parchment-dark bg-parchment px-3 py-2 text-ink outline-none ring-gold/40 focus:ring-2"
+                    />
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))
         )}
       </section>
 
@@ -260,7 +261,7 @@ export function DeckScreen({
         </form>
       </details>
 
-      <div className="sticky bottom-4 mt-auto">
+      <div className="sticky bottom-4 z-20 mt-auto">
         <button
           type="button"
           onClick={onStart}
@@ -272,6 +273,14 @@ export function DeckScreen({
       </div>
     </main>
   )
+}
+
+function groupedCards(cards: Card[]): { title: string; cards: Card[] }[] {
+  return [
+    { title: 'Words', cards: cards.filter((card) => card.kind === 'word') },
+    { title: 'Gemara', cards: cards.filter((card) => card.kind === 'sentence') },
+    { title: 'Questions', cards: cards.filter((card) => card.kind === 'question') },
+  ].filter((group) => group.cards.length > 0)
 }
 
 function pageLabel(page: DafPage): string {

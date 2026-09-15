@@ -112,7 +112,7 @@ export function StudyScreen({
             onKeyDown={handleKeyDown}
             rows={3}
             dir="ltr"
-            placeholder="Type what it means"
+            placeholder="Type the pshat"
             className="w-full resize-y rounded-2xl border border-parchment-dark bg-card px-4 py-3 text-lg text-ink outline-none ring-gold/40 focus:ring-2"
           />
           <div className="grid grid-cols-2 gap-3">

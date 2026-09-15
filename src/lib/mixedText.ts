@@ -33,8 +33,10 @@ export function splitMixedText(text: string): MixedPart[] {
   return parts
 }
 
-export function hasHebrew(text: string): boolean {
-  return /[\u0590-\u05FF]/.test(text)
+export function hebrewRuns(text: string): string[] {
+  return splitMixedText(text)
+    .filter((part) => part.hebrew)
+    .map((part) => part.text)
 }
 
 export function promptIncludesLemma(prompt: string, hebrew: string): boolean {

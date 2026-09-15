@@ -124,7 +124,7 @@ export default function App() {
       const sentences = pack.filter((card) => card.kind === 'sentence').length
       const questions = pack.filter((card) => card.kind === 'question').length
       setNotice(
-        `Loaded ${pack.length} cards from this daf: ${words} words, ${sentences} sentences, ${questions} questions.`,
+        `Loaded ${pack.length} cards from this daf: ${words} words, ${sentences} Gemara, ${questions} questions.`,
       )
     } finally {
       setLoadingDaf(false)

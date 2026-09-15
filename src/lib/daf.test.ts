@@ -15,7 +15,10 @@ describe('Bava Metzia 21b pack', () => {
     expect(kinds.has('question')).toBe(true)
     expect(pack.some((card) => card.hebrew.includes('לֵית'))).toBe(true)
     expect(pack.some((card) => card.hebrew === 'הָוֵי')).toBe(true)
-    expect(pack.some((card) => card.hebrew === 'תָּא שְׁמַע')).toBe(true)
+    expect(pack.some((card) => card.hebrew === 'מַכְנַשְׁתָּא דְּבֵי דָרֵי')).toBe(true)
+    expect(pack.some((card) => card.hebrew === 'כַּבָּא דְחִטֵּי')).toBe(true)
+    expect(pack.some((card) => card.hebrew === 'אַף עַל גַּב')).toBe(true)
+    expect(pack.some((card) => card.hebrew === 'גַּנָּב')).toBe(false)
     expect(pack.some((card) => card.hebrew === 'תָּא')).toBe(false)
     expect(pack.some((card) => card.hebrew === 'עָלְמָא')).toBe(false)
     expect(pack.some((card) => card.kind === 'question' && card.prompt?.includes('יֵאוּשׁ'))).toBe(
