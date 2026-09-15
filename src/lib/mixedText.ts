@@ -71,6 +71,15 @@ export function groupMixedParts(text: string): MixedGroup[] {
   return groups
 }
 
+const LRI = '\u2066'
+const RLI = '\u2067'
+const PDI = '\u2069'
+const LRM = '\u200E'
+
+export function embedHebrewPhrase(words: string[]): string {
+  return `${LRI}${words.map((word) => `${RLI}${word}${PDI}`).join(`${LRM} `)}${PDI}${LRM}`
+}
+
 export function hebrewRuns(text: string): string[] {
   return splitMixedText(text)
     .filter((part) => part.hebrew)

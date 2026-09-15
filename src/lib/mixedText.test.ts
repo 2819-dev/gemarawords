@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { groupMixedParts, promptIncludesLemma, splitMixedText } from './mixedText.ts'
+import { embedHebrewPhrase, groupMixedParts, promptIncludesLemma, splitMixedText } from './mixedText.ts'
 
 describe('splitMixedText', () => {
   it('keeps Hebrew runs together inside an English question', () => {
@@ -28,6 +28,15 @@ describe('groupMixedParts', () => {
       'בּוֹ',
       'סִימָן',
     ])
+  })
+})
+
+describe('embedHebrewPhrase', () => {
+  it('puts Gemara words in source order in the string', () => {
+    const embedded = embedHebrewPhrase(['דָּבָר', 'שֶׁאֵין', 'בּוֹ', 'סִימָן'])
+    expect(embedded.indexOf('דָּבָר')).toBeLessThan(embedded.indexOf('שֶׁאֵין'))
+    expect(embedded.indexOf('שֶׁאֵין')).toBeLessThan(embedded.indexOf('בּוֹ'))
+    expect(embedded.indexOf('בּוֹ')).toBeLessThan(embedded.indexOf('סִימָן'))
   })
 })
 
