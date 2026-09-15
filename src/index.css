@@ -178,3 +178,43 @@ body {
     transform: none;
   }
 }
+
+.certificate-sheet {
+  background: var(--color-card);
+  border: 10px solid var(--color-accent);
+  box-shadow: 0 22px 48px -28px rgba(20, 22, 28, 0.35);
+}
+
+.certificate-seal {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 5.5rem;
+  height: 5.5rem;
+  border: 3px solid currentColor;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+}
+
+@media print {
+  .sefer-spine {
+    display: none !important;
+  }
+
+  .app-shell {
+    display: block;
+    height: auto;
+  }
+
+  .app-main {
+    height: auto;
+    overflow: visible;
+  }
+
+  .certificate-sheet {
+    box-shadow: none;
+    break-inside: avoid;
+  }
+}

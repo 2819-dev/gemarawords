@@ -1,8 +1,11 @@
 import type { Card } from './types.ts'
+import type { ExamResult } from './exam.ts'
 import type { RoundSummary } from './session.ts'
 
 const STORAGE_KEY = 'gemara-words-deck-v2'
 const ROUND_KEY = 'gemara-words-last-round-v1'
+const EXAM_KEY = 'gemara-words-exam-v1'
+const NAME_KEY = 'gemara-words-student-name-v1'
 
 function isCard(value: unknown): value is Card {
   if (!value || typeof value !== 'object') {
@@ -81,6 +84,55 @@ export function loadLastRound(): RoundSummary | null {
 
 export function saveLastRound(summary: RoundSummary): void {
   localStorage.setItem(ROUND_KEY, JSON.stringify(summary))
+}
+
+export function loadStudentName(): string {
+  try {
+    return localStorage.getItem(NAME_KEY) ?? ''
+  } catch {
+    return ''
+  }
+}
+
+export function saveStudentName(name: string): void {
+  localStorage.setItem(NAME_KEY, name)
+}
+
+export function loadLastExam(): ExamResult | null {
+  try {
+    const raw = localStorage.getItem(EXAM_KEY)
+    if (!raw) {
+      return null
+    }
+    const parsed: unknown = JSON.parse(raw)
+    if (!parsed || typeof parsed !== 'object') {
+      return null
+    }
+    const row = parsed as Record<string, unknown>
+    if (
+      typeof row.name !== 'string' ||
+      typeof row.takenAt !== 'string' ||
+      typeof row.minutes !== 'number' ||
+      typeof row.correct !== 'number' ||
+      typeof row.total !== 'number' ||
+      typeof row.percent !== 'number' ||
+      typeof row.passed !== 'boolean' ||
+      typeof row.honor !== 'string' ||
+      !Array.isArray(row.items)
+    ) {
+      return null
+    }
+    return parsed as ExamResult
+  } catch {
+    return null
+  }
+}
+
+export function saveLastExam(result: ExamResult): void {
+  localStorage.setItem(EXAM_KEY, JSON.stringify(result))
+  if (result.name.trim()) {
+    saveStudentName(result.name)
+  }
 }
 
 export function clearDeckStorage(): void {

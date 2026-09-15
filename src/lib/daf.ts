@@ -519,6 +519,55 @@ const QUESTIONS: PackItem[] = [
     'An olive’s look proves whose it is, so the owner does not give up. A fig becomes repulsive when it falls, so he does.',
     ['look proves', 'fig', 'repulsive', 'olive', 'assur', 'mutar'],
   ),
+  question(
+    'when-abaye-yes',
+    'מִידָּע יָדַע',
+    'When does Abaye agree the finder may keep a lost object?',
+    'When the owner already knew and gave up hope. Abaye only argues about ye’ush without knowledge.',
+    ['already knew', 'midaas', 'ordinary', 'without knowledge', 'only argues'],
+  ),
+  question(
+    'later-ring',
+    'יֵאוּשׁ אַחַר כָּךְ',
+    'A ring with a siman fell. The finder picked it up before the owner knew. Later the owner gives up hope. In English, may the finder keep it?',
+    'No. It came to him in issur. Later ye’ush does not take it out.',
+    ['no', 'issur', 'later', 'does not help', 'came to'],
+  ),
+  question(
+    'fruit-hava',
+    'פֵּירוֹת מְפוּזָּרִין',
+    'Someone wants to prove Rava from scattered fruit. What is he thinking, and why is he wrong?',
+    'He thinks the owner did not know they fell, so keeping them would be ye’ush without knowledge. Wrong: it is leftover grain on the threshing floor, which the owner knew about.',
+    ['did not know', 'threshing floor', 'knew', 'not shelo', 'hava'],
+  ),
+  question(
+    'sea-stam',
+    'רַחֲמָנָא שַׁרְיֵיהּ',
+    'Why can’t Rava use something lost in the sea as a raayah, even though the finder keeps it with a siman?',
+    'The Torah itself is matir it. It is not a regular ye’ush case, so it does not prove ye’ush without knowledge.',
+    ['torah', 'matir', 'stam', 'not a raayah', 'regular'],
+  ),
+  question(
+    'rava-counts',
+    'הָוֵי יֵאוּשׁ',
+    'Rava says it is already ye’ush even before the owner knows. In English, what future moment is he counting as happening now?',
+    'The moment the owner finds out and realizes he has no siman, he will give up hope. Rava counts that ye’ush already.',
+    ['finds out', 'no siman', 'give up hope', 'future', 'already'],
+  ),
+  question(
+    'keep-which',
+    'זַיִת וְתְאֵנָה',
+    'You find olives under a tree and a fig on the road. Which may you keep, and why?',
+    'The fig. An olive’s look proves whose it is, so there is no ye’ush. A fig becomes repulsive when it falls, so the owner gives up.',
+    ['fig', 'olive', 'look proves', 'repulsive', 'keep'],
+  ),
+  question(
+    'shul-ordinary',
+    'מִתְיָאֲשִׁין מֵהֶן',
+    'If coins in a shul are the finder’s, why is that ordinary ye’ush and not the machlokes of this sugya?',
+    'The owners know they lost them there. Abaye and Rava only argue when the owner does not yet know.',
+    ['they know', 'ordinary', 'does not know', 'shul', 'not shelo'],
+  ),
 ]
 
 export function buildDafPack(pageId: string): Card[] {

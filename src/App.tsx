@@ -1,12 +1,25 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
+import { CertificateScreen } from './components/CertificateScreen.tsx'
 import { DeckScreen } from './components/DeckScreen.tsx'
+import { ExamResultScreen } from './components/ExamResultScreen.tsx'
+import { ExamScreen } from './components/ExamScreen.tsx'
 import { RecapScreen } from './components/RecapScreen.tsx'
 import { StudyScreen } from './components/StudyScreen.tsx'
 import { buildDafPack, PAGES, refreshLoadedDeck } from './lib/daf.ts'
+import { gradeExam, type ExamResult } from './lib/exam.ts'
 import { gradeCard, MASTER_STREAK, pickNextCard } from './lib/scheduler.ts'
 import { parseSpreadsheetFile } from './lib/spreadsheet.ts'
 import { ROUND_SIZE, emptyRound, type RoundSummary } from './lib/session.ts'
-import { loadDeck, loadLastRound, saveDeck, saveLastRound } from './lib/storage.ts'
+import {
+  loadDeck,
+  loadLastExam,
+  loadLastRound,
+  loadStudentName,
+  saveDeck,
+  saveLastExam,
+  saveLastRound,
+  saveStudentName,
+} from './lib/storage.ts'
 import type { Card, TranslateResult } from './lib/types.ts'
 import {
   addEntriesToDeck,
@@ -16,7 +29,7 @@ import {
   type WordEntry,
 } from './lib/words.ts'
 
-type Screen = 'deck' | 'study' | 'recap'
+type Screen = 'deck' | 'study' | 'recap' | 'exam' | 'exam-result' | 'certificate'
 
 export default function App() {
   const [screen, setScreen] = useState<Screen>('deck')
@@ -34,6 +47,8 @@ export default function App() {
   const [bestStreak, setBestStreak] = useState(0)
   const [solidGained, setSolidGained] = useState(0)
   const [lastRound, setLastRound] = useState<RoundSummary | null>(() => loadLastRound())
+  const [studentName, setStudentName] = useState(() => loadStudentName())
+  const [lastExam, setLastExam] = useState<ExamResult | null>(() => loadLastExam())
 
   useEffect(() => {
     saveDeck(cards)
@@ -44,9 +59,30 @@ export default function App() {
     [cards, currentId],
   )
 
+  function rememberExam(result: ExamResult) {
+    setLastExam(result)
+    saveLastExam(result)
+    setStudentName(result.name)
+  }
+
   function rememberRound(summary: RoundSummary) {
     setLastRound(summary)
     saveLastRound(summary)
+  }
+
+  function handleExamName(name: string) {
+    setStudentName(name)
+    saveStudentName(name)
+    if (lastExam) {
+      const next = { ...lastExam, name: name.trim() || 'Talmid' }
+      setLastExam(next)
+      saveLastExam(next)
+    }
+  }
+
+  function handleExamSubmit(answers: string[], minutes: number) {
+    rememberExam(gradeExam(answers, studentName, minutes))
+    setScreen('exam-result')
   }
 
   function snapshotRound(complete: boolean): RoundSummary {
@@ -279,6 +315,39 @@ export default function App() {
     ],
   )
 
+  if (screen === 'exam') {
+    return (
+      <ExamScreen
+        name={studentName}
+        onNameChange={handleExamName}
+        onSubmit={handleExamSubmit}
+        onBack={() => setScreen('deck')}
+      />
+    )
+  }
+
+  if (screen === 'exam-result' && lastExam) {
+    return (
+      <ExamResultScreen
+        result={lastExam}
+        onCertificate={() => setScreen('certificate')}
+        onAgain={() => setScreen('exam')}
+        onHome={() => setScreen('deck')}
+      />
+    )
+  }
+
+  if (screen === 'certificate' && lastExam) {
+    return (
+      <CertificateScreen
+        result={lastExam}
+        onNameChange={handleExamName}
+        onBack={() => setScreen('exam-result')}
+        onHome={() => setScreen('deck')}
+      />
+    )
+  }
+
   if (screen === 'recap') {
     return (
       <RecapScreen
@@ -317,6 +386,7 @@ export default function App() {
       notice={notice}
       error={error}
       lastRound={lastRound}
+      lastExam={lastExam}
       onSelectPage={setSelectedPageId}
       onLoadDaf={() => void handleLoadDaf()}
       onPasteChange={setPaste}
@@ -326,6 +396,8 @@ export default function App() {
       onRemove={handleRemove}
       onClear={handleClear}
       onStart={beginRound}
+      onExam={() => setScreen('exam')}
+      onCertificate={() => setScreen('certificate')}
     />
   )
 }
