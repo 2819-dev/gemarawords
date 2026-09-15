@@ -241,17 +241,17 @@ export function DeckScreen({
             </p>
           ) : (
             <>
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-                <div className="flex overflow-x-auto rounded-full border border-parchment-dark bg-card p-1">
+              <div className="flex flex-col gap-3">
+                <div className="flex flex-wrap gap-1.5">
                   {FILTERS.map((item) => (
                     <button
                       key={item.id}
                       type="button"
                       onClick={() => setFilter(item.id)}
-                      className={`rounded-full px-3 py-1.5 text-sm font-semibold ${
+                      className={`rounded-full px-3.5 py-1.5 text-sm font-semibold ${
                         filter === item.id
                           ? 'bg-ink text-parchment'
-                          : 'text-ink-soft hover:text-ink'
+                          : 'border border-parchment-dark bg-card text-ink-soft hover:text-ink'
                       }`}
                     >
                       {item.label}
