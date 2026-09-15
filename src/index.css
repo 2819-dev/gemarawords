@@ -100,8 +100,11 @@ body {
   animation: quiz-pop 0.42s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-.quiz-shake {
-  animation: quiz-shake 0.42s ease;
+.quiz-burst {
+  box-shadow:
+    0 0 0 5px rgba(15, 122, 74, 0.16),
+    0 1px 0 rgba(255, 255, 255, 0.8) inset,
+    0 22px 48px -28px rgba(20, 22, 28, 0.35);
 }
 
 .pressable {

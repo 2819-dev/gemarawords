@@ -2,12 +2,13 @@ import { useMemo, useRef, useState, type DragEvent, type FormEvent } from 'react
 import { buildDafPack, PAGES, type DafPage } from '../lib/daf.ts'
 import { questionFor } from '../lib/answer.ts'
 import { MASTER_STREAK } from '../lib/scheduler.ts'
+import { roundHeadline, type RoundSummary } from '../lib/session.ts'
 import type { Card, CardKind } from '../lib/types.ts'
 import { AppFrame } from './AppFrame.tsx'
 import { KindBadge } from './KindBadge.tsx'
 import { MixedText } from './MixedText.tsx'
 
-type DeckFilter = 'all' | CardKind
+type DeckFilter = 'all' | CardKind | 'back'
 
 type DeckScreenProps = {
   cards: Card[]
@@ -17,6 +18,7 @@ type DeckScreenProps = {
   selectedPageId: string
   notice: string
   error: string
+  lastRound: RoundSummary | null
   onSelectPage: (pageId: string) => void
   onLoadDaf: () => void
   onPasteChange: (value: string) => void
@@ -42,6 +44,7 @@ export function DeckScreen({
   selectedPageId,
   notice,
   error,
+  lastRound,
   onSelectPage,
   onLoadDaf,
   onPasteChange,
@@ -77,7 +80,12 @@ export function DeckScreen({
   const visibleCards = useMemo(() => {
     const needle = query.trim().toLowerCase()
     return cards.filter((card) => {
-      if (filter !== 'all' && card.kind !== filter) {
+      if (filter === 'back') {
+        const comingBack = card.weight > 1 || card.consecutiveCorrect === 1
+        if (!comingBack) {
+          return false
+        }
+      } else if (filter !== 'all' && card.kind !== filter) {
         return false
       }
       if (!needle) {
@@ -202,6 +210,8 @@ export function DeckScreen({
               <Stat label="Questions" value={stats.questions} hint="raayos" />
             </dl>
 
+            {cards.length > 0 ? <KindPath cards={cards} /> : null}
+
             {missing > 0 ? (
               <p className="rounded-xl bg-bad/10 px-3 py-2 text-sm text-bad">
                 {missing} card{missing === 1 ? '' : 's'} still need an answer before
@@ -245,6 +255,27 @@ export function DeckScreen({
         ) : null}
         {error ? (
           <p className="rounded-2xl bg-bad/10 px-4 py-3 text-sm text-bad">{error}</p>
+        ) : null}
+
+        {lastRound && lastRound.reviewed > 0 ? (
+          <button
+            type="button"
+            onClick={onStart}
+            disabled={!canStart}
+            className="quiz-card pressable px-5 py-5 text-left disabled:opacity-50"
+          >
+            <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-accent">
+              Last sitting
+            </p>
+            <p className="font-display mt-2 text-2xl font-medium text-ink">
+              {roundHeadline(lastRound)}
+            </p>
+            <p className="mt-1 text-sm text-muted">
+              {lastRound.correct} of {lastRound.reviewed}
+              {lastRound.bestStreak > 1 ? ` · streak ${lastRound.bestStreak}` : ''}
+              {lastRound.solidGained > 0 ? ` · ${lastRound.solidGained} locked in` : ''}
+            </p>
+          </button>
         ) : null}
 
         <section className="flex flex-col gap-4">
@@ -325,7 +356,10 @@ export function DeckScreen({
                         >
                           <span className={`w-1.5 shrink-0 ${RAIL[card.kind]}`} aria-hidden="true" />
                           <span className="flex min-w-0 flex-1 items-start gap-3 px-4 py-3">
-                            <KindBadge kind={card.kind} />
+                            <span className="flex shrink-0 flex-col items-start gap-1">
+                              <KindBadge kind={card.kind} />
+                              <CardStatus card={card} />
+                            </span>
                             <span className="min-w-0 flex-1">
                               <span
                                 className="hebrew block text-right text-xl leading-snug text-ink"
@@ -476,6 +510,7 @@ const FILTERS: { id: DeckFilter; label: string }[] = [
   { id: 'word', label: 'Words' },
   { id: 'sentence', label: 'Gemara' },
   { id: 'question', label: 'Questions' },
+  { id: 'back', label: 'Coming back' },
 ]
 
 function countsFor(cards: Pick<Card, 'kind'>[]) {
@@ -484,6 +519,54 @@ function countsFor(cards: Pick<Card, 'kind'>[]) {
     sentences: cards.filter((card) => card.kind === 'sentence').length,
     questions: cards.filter((card) => card.kind === 'question').length,
   }
+}
+
+function KindPath({ cards }: { cards: Card[] }) {
+  const rows: { kind: CardKind; label: string; bar: string }[] = [
+    { kind: 'word', label: 'Terms', bar: 'bg-accent' },
+    { kind: 'sentence', label: 'Gemara', bar: 'bg-mark' },
+    { kind: 'question', label: 'Raayos', bar: 'bg-ok' },
+  ]
+  return (
+    <div className="flex flex-col gap-2.5">
+      {rows.map((row) => {
+        const ofKind = cards.filter((card) => card.kind === row.kind)
+        const solid = ofKind.filter(
+          (card) => card.consecutiveCorrect >= MASTER_STREAK,
+        ).length
+        const percent = ofKind.length === 0 ? 0 : solid / ofKind.length
+        return (
+          <div key={row.kind}>
+            <div className="mb-1 flex items-center justify-between text-[11px] font-semibold uppercase tracking-[0.14em] text-muted">
+              <span>{row.label}</span>
+              <span>
+                {solid}/{ofKind.length}
+              </span>
+            </div>
+            <div className="h-1.5 overflow-hidden rounded-full bg-line">
+              <div
+                className={`h-full rounded-full ${row.bar}`}
+                style={{ width: `${percent * 100}%` }}
+              />
+            </div>
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
+function CardStatus({ card }: { card: Card }) {
+  if (card.consecutiveCorrect >= MASTER_STREAK) {
+    return <span className="text-[11px] font-semibold text-ok">Solid</span>
+  }
+  if (card.weight > 1) {
+    return <span className="text-[11px] font-semibold text-accent">Back</span>
+  }
+  if (card.consecutiveCorrect === 1) {
+    return <span className="text-[11px] font-semibold text-mark">1 more</span>
+  }
+  return null
 }
 
 function Stat({

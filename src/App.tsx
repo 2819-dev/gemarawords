@@ -1,10 +1,12 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { DeckScreen } from './components/DeckScreen.tsx'
+import { RecapScreen } from './components/RecapScreen.tsx'
 import { StudyScreen } from './components/StudyScreen.tsx'
 import { buildDafPack, PAGES, refreshLoadedDeck } from './lib/daf.ts'
 import { gradeCard, MASTER_STREAK, pickNextCard } from './lib/scheduler.ts'
 import { parseSpreadsheetFile } from './lib/spreadsheet.ts'
-import { loadDeck, saveDeck } from './lib/storage.ts'
+import { ROUND_SIZE, emptyRound, type RoundSummary } from './lib/session.ts'
+import { loadDeck, loadLastRound, saveDeck, saveLastRound } from './lib/storage.ts'
 import type { Card, TranslateResult } from './lib/types.ts'
 import {
   addEntriesToDeck,
@@ -14,7 +16,7 @@ import {
   type WordEntry,
 } from './lib/words.ts'
 
-type Screen = 'deck' | 'study'
+type Screen = 'deck' | 'study' | 'recap'
 
 export default function App() {
   const [screen, setScreen] = useState<Screen>('deck')
@@ -29,6 +31,9 @@ export default function App() {
   const [reviewed, setReviewed] = useState(0)
   const [sessionCorrect, setSessionCorrect] = useState(0)
   const [sessionStreak, setSessionStreak] = useState(0)
+  const [bestStreak, setBestStreak] = useState(0)
+  const [solidGained, setSolidGained] = useState(0)
+  const [lastRound, setLastRound] = useState<RoundSummary | null>(() => loadLastRound())
 
   useEffect(() => {
     saveDeck(cards)
@@ -38,6 +43,35 @@ export default function App() {
     () => cards.find((card) => card.id === currentId),
     [cards, currentId],
   )
+
+  function rememberRound(summary: RoundSummary) {
+    setLastRound(summary)
+    saveLastRound(summary)
+  }
+
+  function snapshotRound(complete: boolean): RoundSummary {
+    return {
+      correct: sessionCorrect,
+      reviewed,
+      solidGained,
+      bestStreak,
+      complete,
+    }
+  }
+
+  function beginRound() {
+    const first = pickNextCard(cards, null)
+    if (!first) {
+      return
+    }
+    setCurrentId(first.id)
+    setReviewed(0)
+    setSessionCorrect(0)
+    setSessionStreak(0)
+    setBestStreak(0)
+    setSolidGained(0)
+    setScreen('study')
+  }
 
   async function fillMissingTranslations(added: Card[]) {
     const needsLookup = added.filter((card) => !card.translation.trim())
@@ -181,16 +215,11 @@ export default function App() {
     setError('')
   }
 
-  function handleStart() {
-    const first = pickNextCard(cards, null)
-    if (!first) {
-      return
+  function handleLeaveStudy() {
+    if (reviewed > 0) {
+      rememberRound(snapshotRound(false))
     }
-    setCurrentId(first.id)
-    setReviewed(0)
-    setSessionCorrect(0)
-    setSessionStreak(0)
-    setScreen('study')
+    setScreen('deck')
   }
 
   const handleGrade = useCallback(
@@ -200,17 +229,65 @@ export default function App() {
       }
       const graded = gradeCard(current, correct)
       const nextCards = cards.map((card) => (card.id === graded.id ? graded : card))
-      setCards(nextCards)
-      setReviewed((count) => count + 1)
-      setSessionStreak((count) => (correct ? count + 1 : 0))
-      if (correct) {
-        setSessionCorrect((count) => count + 1)
+      const nextReviewed = reviewed + 1
+      const nextStreak = correct ? sessionStreak + 1 : 0
+      const nextCorrect = sessionCorrect + (correct ? 1 : 0)
+      const lockedIn =
+        current.consecutiveCorrect < MASTER_STREAK &&
+        graded.consecutiveCorrect >= MASTER_STREAK
+      const nextSolid = solidGained + (lockedIn ? 1 : 0)
+      const nextBest = Math.max(bestStreak, nextStreak)
+      const summary: RoundSummary = {
+        correct: nextCorrect,
+        reviewed: nextReviewed,
+        solidGained: nextSolid,
+        bestStreak: nextBest,
+        complete: nextReviewed >= ROUND_SIZE,
       }
+
+      setCards(nextCards)
+      setReviewed(nextReviewed)
+      setSessionStreak(nextStreak)
+      setSessionCorrect(nextCorrect)
+      setSolidGained(nextSolid)
+      setBestStreak(nextBest)
+
+      if (summary.complete) {
+        rememberRound(summary)
+        setCurrentId(null)
+        setScreen('recap')
+        return
+      }
+
       const next = pickNextCard(nextCards, graded.id)
-      setCurrentId(next?.id ?? null)
+      if (!next) {
+        rememberRound({ ...summary, complete: true })
+        setCurrentId(null)
+        setScreen('recap')
+        return
+      }
+      setCurrentId(next.id)
     },
-    [cards, current],
+    [
+      bestStreak,
+      cards,
+      current,
+      reviewed,
+      sessionCorrect,
+      sessionStreak,
+      solidGained,
+    ],
   )
+
+  if (screen === 'recap') {
+    return (
+      <RecapScreen
+        summary={lastRound ?? emptyRound()}
+        onAgain={beginRound}
+        onHome={() => setScreen('deck')}
+      />
+    )
+  }
 
   if (screen === 'study' && current) {
     const masteredCount = cards.filter(
@@ -221,12 +298,11 @@ export default function App() {
         key={current.id}
         card={current}
         reviewed={reviewed}
-        sessionCorrect={sessionCorrect}
+        roundSize={ROUND_SIZE}
         sessionStreak={sessionStreak}
-        deckSize={cards.length}
         masteredCount={masteredCount}
         onGrade={handleGrade}
-        onBack={() => setScreen('deck')}
+        onBack={handleLeaveStudy}
       />
     )
   }
@@ -240,6 +316,7 @@ export default function App() {
       selectedPageId={selectedPageId}
       notice={notice}
       error={error}
+      lastRound={lastRound}
       onSelectPage={setSelectedPageId}
       onLoadDaf={() => void handleLoadDaf()}
       onPasteChange={setPaste}
@@ -248,7 +325,7 @@ export default function App() {
       onTranslationChange={handleTranslationChange}
       onRemove={handleRemove}
       onClear={handleClear}
-      onStart={handleStart}
+      onStart={beginRound}
     />
   )
 }

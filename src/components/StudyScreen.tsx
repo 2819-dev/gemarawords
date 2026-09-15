@@ -9,9 +9,8 @@ import type { Card } from '../lib/types.ts'
 type StudyScreenProps = {
   card: Card
   reviewed: number
-  sessionCorrect: number
+  roundSize: number
   sessionStreak: number
-  deckSize: number
   masteredCount: number
   onGrade: (correct: boolean) => void
   onBack: () => void
@@ -20,16 +19,16 @@ type StudyScreenProps = {
 export function StudyScreen({
   card,
   reviewed,
-  sessionCorrect,
+  roundSize,
   sessionStreak,
-  deckSize,
   masteredCount,
   onGrade,
   onBack,
 }: StudyScreenProps) {
   const [draft, setDraft] = useState('')
   const [result, setResult] = useState<AnswerCheck | null>(null)
-  const progress = deckSize === 0 ? 0 : Math.min(1, masteredCount / deckSize)
+  const answered = Boolean(result)
+  const roundDone = Math.min(roundSize, reviewed + (answered ? 1 : 0))
   const solidNow = Boolean(result?.correct && card.consecutiveCorrect + 1 >= MASTER_STREAK)
   const liveStreak = result ? (result.correct ? sessionStreak + 1 : 0) : sessionStreak
 
@@ -85,42 +84,45 @@ export function StudyScreen({
             ← Deck
           </button>
           <div className="flex flex-wrap items-center justify-end gap-2">
-            {liveStreak > 1 ? (
+            {liveStreak > 0 ? (
               <p className="rounded-full bg-accent/10 px-3 py-1 text-sm font-semibold text-accent">
                 {liveStreak} in a row
               </p>
-            ) : null}
-            <p className="text-sm text-muted">
-              {sessionCorrect}/{reviewed || 0} this session
-            </p>
+            ) : (
+              <p className="text-sm text-muted">{masteredCount} solid</p>
+            )}
           </div>
         </header>
 
         <div className="mt-4">
           <div className="mb-1.5 flex items-center justify-between text-[11px] font-semibold uppercase tracking-[0.16em] text-muted">
-            <span>Solid in this deck</span>
+            <span>This round</span>
             <span>
-              {masteredCount}/{deckSize}
+              {roundDone}/{roundSize}
             </span>
           </div>
           <div
-            className="h-2 overflow-hidden rounded-full bg-line"
+            className="flex gap-1"
             role="progressbar"
             aria-valuemin={0}
-            aria-valuemax={deckSize}
-            aria-valuenow={masteredCount}
-            aria-label={`${masteredCount} of ${deckSize} cards solid`}
+            aria-valuemax={roundSize}
+            aria-valuenow={roundDone}
+            aria-label={`${roundDone} of ${roundSize} cards this round`}
           >
-            <div
-              className="h-full rounded-full bg-accent transition-[width] duration-300"
-              style={{ width: `${progress * 100}%` }}
-            />
+            {Array.from({ length: roundSize }, (_, index) => (
+              <span
+                key={index}
+                className={`h-2.5 flex-1 rounded-full ${
+                  index < roundDone ? 'bg-accent' : 'bg-line'
+                }`}
+              />
+            ))}
           </div>
         </div>
 
         <div
           className={`study-enter quiz-card mt-5 flex min-h-0 flex-1 flex-col ${
-            result ? (result.correct ? 'quiz-pop' : 'quiz-shake') : ''
+            result ? (result.correct ? (solidNow ? 'quiz-burst quiz-pop' : 'quiz-pop') : 'quiz-shake') : ''
           }`}
         >
           <FlashCard card={card} />
@@ -143,11 +145,16 @@ export function StudyScreen({
                     result.correct ? 'text-ok' : 'text-bad'
                   }`}
                 >
-                  {feedbackCopy(result, solidNow)}
+                  {feedbackCopy(result, solidNow, liveStreak)}
                 </p>
                 {solidNow ? (
                   <p className="mt-1 text-sm font-semibold text-ok">
                     Twice in a row — this one is solid.
+                  </p>
+                ) : null}
+                {result.correct && liveStreak >= 3 && !solidNow ? (
+                  <p className="mt-1 text-sm font-semibold text-ok">
+                    Keep the pshat coming.
                   </p>
                 ) : null}
               </div>
@@ -176,7 +183,7 @@ export function StudyScreen({
                 onClick={() => onGrade(result.correct)}
                 className="pressable rounded-full bg-ink px-4 py-3 text-base font-semibold text-white shadow-md"
               >
-                Continue
+                {roundDone >= roundSize ? 'See the round' : 'Continue'}
               </button>
             </div>
           </section>
@@ -199,7 +206,7 @@ export function StudyScreen({
               autoComplete="off"
               autoCorrect="off"
               spellCheck
-              placeholder="Type the pshat in English"
+              placeholder={placeholderFor(card)}
               className="w-full resize-none rounded-2xl border border-line bg-card px-4 py-3 text-lg text-ink shadow-[0_8px_24px_-18px_rgba(20,22,28,0.35)] outline-none ring-accent/40 focus:ring-2"
             />
             <div className="mt-3 grid grid-cols-2 gap-3">
@@ -238,12 +245,22 @@ function ResultMark({ ok }: { ok: boolean }) {
   )
 }
 
-function feedbackCopy(result: AnswerCheck, solidNow: boolean): string {
+function feedbackCopy(
+  result: AnswerCheck,
+  solidNow: boolean,
+  liveStreak: number,
+): string {
   if (result.correct) {
     if (solidNow) {
       return 'Locked in.'
     }
-    return 'That’s the pshat.'
+    if (liveStreak >= 4) {
+      return 'You’re flying.'
+    }
+    if (liveStreak >= 2) {
+      return 'That’s the pshat.'
+    }
+    return 'Yes.'
   }
   if (result.reason === 'empty') {
     return 'Here’s the pshat.'
@@ -252,4 +269,14 @@ function feedbackCopy(result: AnswerCheck, solidNow: boolean): string {
     return 'Say it in English — copying the Hebrew is not the pshat.'
   }
   return 'Not yet.'
+}
+
+function placeholderFor(card: Card): string {
+  if (card.kind === 'question') {
+    return 'The raayah or diyuk, in English'
+  }
+  if (card.kind === 'sentence') {
+    return 'The pshat of this line, in English'
+  }
+  return 'Type the pshat in English'
 }

@@ -1,6 +1,8 @@
 import type { Card } from './types.ts'
+import type { RoundSummary } from './session.ts'
 
 const STORAGE_KEY = 'gemara-words-deck-v2'
+const ROUND_KEY = 'gemara-words-last-round-v1'
 
 function isCard(value: unknown): value is Card {
   if (!value || typeof value !== 'object') {
@@ -45,6 +47,43 @@ export function saveDeck(cards: Card[]): void {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(cards))
 }
 
+export function loadLastRound(): RoundSummary | null {
+  try {
+    const raw = localStorage.getItem(ROUND_KEY)
+    if (!raw) {
+      return null
+    }
+    const parsed: unknown = JSON.parse(raw)
+    if (!parsed || typeof parsed !== 'object') {
+      return null
+    }
+    const row = parsed as Record<string, unknown>
+    if (
+      typeof row.correct !== 'number' ||
+      typeof row.reviewed !== 'number' ||
+      typeof row.solidGained !== 'number' ||
+      typeof row.bestStreak !== 'number' ||
+      typeof row.complete !== 'boolean'
+    ) {
+      return null
+    }
+    return {
+      correct: row.correct,
+      reviewed: row.reviewed,
+      solidGained: row.solidGained,
+      bestStreak: row.bestStreak,
+      complete: row.complete,
+    }
+  } catch {
+    return null
+  }
+}
+
+export function saveLastRound(summary: RoundSummary): void {
+  localStorage.setItem(ROUND_KEY, JSON.stringify(summary))
+}
+
 export function clearDeckStorage(): void {
   localStorage.removeItem(STORAGE_KEY)
+  localStorage.removeItem(ROUND_KEY)
 }
