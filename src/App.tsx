@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { DeckScreen } from './components/DeckScreen.tsx'
 import { StudyScreen } from './components/StudyScreen.tsx'
+import { buildDafPack, mergeDafPack, PAGES } from './lib/daf.ts'
 import { gradeCard, pickNextCard } from './lib/scheduler.ts'
 import { parseSpreadsheetFile } from './lib/spreadsheet.ts'
 import { loadDeck, saveDeck } from './lib/storage.ts'
@@ -20,6 +21,8 @@ export default function App() {
   const [cards, setCards] = useState<Card[]>(() => loadDeck())
   const [paste, setPaste] = useState('')
   const [translating, setTranslating] = useState(false)
+  const [loadingDaf, setLoadingDaf] = useState(false)
+  const [selectedPageId, setSelectedPageId] = useState(PAGES[0]?.id ?? 'bava-metzia-21b')
   const [notice, setNotice] = useState('')
   const [error, setError] = useState('')
   const [currentId, setCurrentId] = useState<string | null>(null)
@@ -102,6 +105,27 @@ export default function App() {
 
     if (result.added.length > 0) {
       await fillMissingTranslations(result.added)
+    }
+  }
+
+  async function handleLoadDaf() {
+    setError('')
+    setLoadingDaf(true)
+    try {
+      const pack = buildDafPack(selectedPageId)
+      if (pack.length === 0) {
+        setNotice('That daf is not ready yet.')
+        return
+      }
+      setCards(mergeDafPack(cards, pack))
+      const words = pack.filter((card) => card.kind === 'word').length
+      const sentences = pack.filter((card) => card.kind === 'sentence').length
+      const questions = pack.filter((card) => card.kind === 'question').length
+      setNotice(
+        `Loaded ${pack.length} cards from this daf: ${words} words, ${sentences} sentences, ${questions} questions.`,
+      )
+    } finally {
+      setLoadingDaf(false)
     }
   }
 
@@ -196,8 +220,12 @@ export default function App() {
       cards={cards}
       paste={paste}
       translating={translating}
+      loadingDaf={loadingDaf}
+      selectedPageId={selectedPageId}
       notice={notice}
       error={error}
+      onSelectPage={setSelectedPageId}
+      onLoadDaf={() => void handleLoadDaf()}
       onPasteChange={setPaste}
       onAdd={() => void handleAdd()}
       onUpload={(file) => void handleUpload(file)}

@@ -31,7 +31,7 @@ export function StudyScreen({
           ← Deck
         </button>
         <p className="text-sm text-ink-soft">
-          {deckSize} words · reviewed {reviewed}
+          {deckSize} cards · reviewed {reviewed}
         </p>
       </div>
 
@@ -56,7 +56,7 @@ export function StudyScreen({
         </div>
       ) : (
         <p className="text-center text-ink-soft">
-          Think of the meaning, then tap the card.
+          Think of the answer, then tap the card.
         </p>
       )}
     </main>

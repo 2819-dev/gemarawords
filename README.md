@@ -1,14 +1,13 @@
 # Gemara Word Flashcards
 
-Paste Hebrew (or Aramaic) Gemara words, get translations, then study them as flashcards. Missed words come back more often until you keep getting them right. Duplicate words are merged into one card.
+Paste Hebrew words, upload Excel, or load a daf. Right now one page is ready: **Bava Metzia 21b (אלו מציאות)** — words, sentences, and questions mixed together.
 
 ## Use it
 
-1. Paste words, or upload an `.xlsx` / `.csv` (one word per row, optional second column for the translation).
-2. Add words — missing translations fill in from [Sefaria](https://www.sefaria.org/) dictionaries (Jastrow first), with a machine-translate fallback.
-3. Edit any gloss that looks wrong.
-4. Press **Start**.
-5. Tap a card to see the translation, then mark **Correct** or **Incorrect**.
+1. Choose **Bava Metzia 21b** and press **Load this daf**.
+2. Study a mix of words (ייאוש שלא מדעת), sentences from the Gemara, and questions (“What does ye’ush shelo mida’as mean?”).
+3. Tap a card for the answer, then mark **Correct** or **Incorrect**. Missed cards come back more often.
+4. You can still paste extra words or upload `.xlsx` / `.csv` if you want.
 
 Your deck stays in this browser (`localStorage`).
 

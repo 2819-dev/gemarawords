@@ -33,6 +33,7 @@ export function createCard(hebrew: string, translation?: string): Card {
   const trimmed = typeof translation === 'string' ? translation.trim() : ''
   return {
     id: normalizeWord(hebrew),
+    kind: 'word',
     hebrew,
     translation: trimmed,
     weight: 1,
