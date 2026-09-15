@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { DeckScreen } from './components/DeckScreen.tsx'
 import { StudyScreen } from './components/StudyScreen.tsx'
-import { buildDafPack, mergeDafPack, PAGES } from './lib/daf.ts'
+import { buildDafPack, mergeDafPack, PAGES, refreshLoadedDeck } from './lib/daf.ts'
 import { gradeCard, pickNextCard } from './lib/scheduler.ts'
 import { parseSpreadsheetFile } from './lib/spreadsheet.ts'
 import { loadDeck, saveDeck } from './lib/storage.ts'
@@ -18,7 +18,7 @@ type Screen = 'deck' | 'study'
 
 export default function App() {
   const [screen, setScreen] = useState<Screen>('deck')
-  const [cards, setCards] = useState<Card[]>(() => loadDeck())
+  const [cards, setCards] = useState<Card[]>(() => refreshLoadedDeck(loadDeck()))
   const [paste, setPaste] = useState('')
   const [translating, setTranslating] = useState(false)
   const [loadingDaf, setLoadingDaf] = useState(false)
@@ -26,7 +26,6 @@ export default function App() {
   const [notice, setNotice] = useState('')
   const [error, setError] = useState('')
   const [currentId, setCurrentId] = useState<string | null>(null)
-  const [flipped, setFlipped] = useState(false)
   const [reviewed, setReviewed] = useState(0)
 
   useEffect(() => {
@@ -186,7 +185,6 @@ export default function App() {
       return
     }
     setCurrentId(first.id)
-    setFlipped(false)
     setReviewed(0)
     setScreen('study')
   }
@@ -201,17 +199,15 @@ export default function App() {
     setReviewed((count) => count + 1)
     const next = pickNextCard(nextCards, graded.id)
     setCurrentId(next?.id ?? null)
-    setFlipped(false)
   }
 
   if (screen === 'study' && current) {
     return (
       <StudyScreen
+        key={current.id}
         card={current}
-        flipped={flipped}
         reviewed={reviewed}
         deckSize={cards.length}
-        onFlip={() => setFlipped(true)}
         onGrade={handleGrade}
         onBack={() => setScreen('deck')}
       />

@@ -78,8 +78,9 @@ export function DeckScreen({
           Daf Flashcards
         </h1>
         <p className="mt-2 text-ink-soft">
-          Pick a daf, then study a mix of Hebrew and Aramaic words,
-          sentences, and questions. Missed cards come back more often.
+          Pick a daf, then answer questions on Hebrew and Aramaic words,
+          phrases, sentences, and the sugya. Type what you think, then see
+          if you got it. Missed cards come back more often.
         </p>
       </header>
 
@@ -144,8 +145,9 @@ export function DeckScreen({
 
         {cards.length === 0 ? (
           <p className="rounded-2xl border border-dashed border-parchment-dark px-4 py-10 text-center text-ink-soft">
-            Load Bava Metzia 21b to get Hebrew and Aramaic words, sentences,
-            and questions from אלו מציאות.
+            Load Bava Metzia 21b to get Hebrew and Aramaic words and phrases,
+            sentences, and questions from אלו מציאות. If a piece only makes
+            sense as part of an expression, it stays as that expression.
           </p>
         ) : (
           <ul className="flex flex-col gap-3">

@@ -28,6 +28,7 @@ type PackItem = {
   hebrew: string
   translation: string
   prompt?: string
+  keywords?: string[]
 }
 
 function cardFromItem(item: PackItem): Card {
@@ -45,6 +46,7 @@ const WORDS: PackItem[] = [
     kind: 'word',
     hebrew: 'יֵאוּשׁ',
     translation: 'Despair of recovering a lost object — the owner gives up hope of getting it back.',
+    keywords: ['despair', 'give up', 'yeush', 'yeiush'],
   },
   {
     id: 'bm21b-w-yeush-shelo',
@@ -52,210 +54,231 @@ const WORDS: PackItem[] = [
     hebrew: 'יֵאוּשׁ שֶׁלֹּא מִדַּעַת',
     translation:
       'Unconscious despair: the owner does not yet know he lost it, but would despair if he knew.',
+    keywords: ['unconscious despair', 'without knowledge', 'shelo midaas', 'does not know'],
   },
   {
     id: 'bm21b-w-abaye',
     kind: 'word',
     hebrew: 'אַבָּיֵי',
     translation: 'Abaye, an Amora. Here he says ye’ush shelo mida’as is not ye’ush.',
+    keywords: ['abaye'],
   },
   {
     id: 'bm21b-w-rava',
     kind: 'word',
     hebrew: 'רָבָא',
     translation: 'Rava, an Amora. Here he says ye’ush shelo mida’as is ye’ush.',
+    keywords: ['rava'],
   },
   {
     id: 'bm21b-w-lo-havei',
     kind: 'word',
     hebrew: 'לָא הָוֵי יֵאוּשׁ',
     translation: 'It is not (valid) despair. The owner still owns it; the finder may not keep it.',
+    keywords: ['not despair', 'not yeush', 'is not'],
   },
   {
     id: 'bm21b-w-havei',
     kind: 'word',
     hebrew: 'הָוֵי יֵאוּשׁ',
     translation: 'It is (valid) despair. The finder may keep it.',
+    keywords: ['is despair', 'it is yeush', 'valid despair'],
   },
   {
     id: 'bm21b-w-havei-verb',
     kind: 'word',
     hebrew: 'הָוֵי',
     translation: 'Aramaic: is / was / would be. From הוי, to be.',
+    keywords: ['is', 'was', 'would be', 'to be'],
   },
   {
     id: 'bm21b-w-ait',
     kind: 'word',
     hebrew: 'אִית',
     translation: 'Aramaic: there is / there are.',
+    keywords: ['there is', 'there are'],
   },
   {
     id: 'bm21b-w-leit',
     kind: 'word',
     hebrew: 'לֵית',
     translation: 'Aramaic: there is not. From לא אית.',
-  },
-  {
-    id: 'bm21b-w-ta',
-    kind: 'word',
-    hebrew: 'תָּא',
-    translation: 'Aramaic: come! Imperative of אתא, to come.',
-  },
-  {
-    id: 'bm21b-w-alma',
-    kind: 'word',
-    hebrew: 'עָלְמָא',
-    translation: 'Aramaic: the world. כולי עלמא = everyone.',
+    keywords: ['there is not', "there isn't", 'there are not'],
   },
   {
     id: 'bm21b-w-nami',
     kind: 'word',
     hebrew: 'נָמֵי',
     translation: 'Aramaic: also / too.',
+    keywords: ['also', 'too'],
   },
   {
     id: 'bm21b-w-hacha',
     kind: 'word',
     hebrew: 'הָכָא',
     translation: 'Aramaic: here.',
+    keywords: ['here'],
   },
   {
     id: 'bm21b-w-hatam',
     kind: 'word',
     hebrew: 'הָתָם',
     translation: 'Aramaic: there.',
+    keywords: ['there'],
   },
   {
     id: 'bm21b-w-amai',
     kind: 'word',
     hebrew: 'אַמַּאי',
     translation: 'Aramaic: why?',
+    keywords: ['why'],
   },
   {
     id: 'bm21b-w-meimar',
     kind: 'word',
     hebrew: 'מֵימָר אָמַר',
     translation: 'Aramaic: he would say to himself.',
+    keywords: ['would say', 'say to himself'],
   },
   {
     id: 'bm21b-w-ata-lideih',
     kind: 'word',
     hebrew: 'אֲתָא לִידֵיהּ',
     translation: 'Aramaic: it came into his possession (into his hand).',
+    keywords: ['came into', 'possession', 'his hand'],
   },
   {
     id: 'bm21b-w-issura',
     kind: 'word',
     hebrew: 'בְּאִיסּוּרָא',
     translation: 'In a prohibited way — the finder already took it while it was still forbidden.',
+    keywords: ['forbidden', 'prohibited', 'issur'],
   },
   {
     id: 'bm21b-w-simana-leit',
     kind: 'word',
     hebrew: 'סִימָנָא לֵית לִי בְּגַוֵּיהּ',
     translation: 'Aramaic: I have no distinguishing mark in it.',
+    keywords: ['no mark', 'no siman', 'no distinguishing'],
   },
   {
     id: 'bm21b-w-siman',
     kind: 'word',
     hebrew: 'סִימָן',
     translation: 'A distinguishing mark the owner can use to identify and claim the object.',
+    keywords: ['mark', 'sign', 'identifying', 'siman'],
   },
   {
     id: 'bm21b-w-yes-siman',
     kind: 'word',
     hebrew: 'דָּבָר שֶׁיֵּשׁ בּוֹ סִימָן',
     translation: 'An item that has a distinguishing mark.',
+    keywords: ['has a mark', 'has a siman', 'distinguishing mark'],
   },
   {
     id: 'bm21b-w-no-siman',
     kind: 'word',
     hebrew: 'דָּבָר שֶׁאֵין בּוֹ סִימָן',
     translation: 'An item with no distinguishing mark — this is where Abaye and Rava argue.',
+    keywords: ['no mark', 'no siman', 'without a siman'],
   },
   {
     id: 'bm21b-w-kuli-alma',
     kind: 'word',
     hebrew: 'כּוּלֵּי עָלְמָא לָא פְּלִיגִי',
     translation: 'Everyone agrees. No dispute.',
+    keywords: ['everyone agrees', 'no dispute', 'kuli alma'],
   },
   {
     id: 'bm21b-w-zuto',
     kind: 'word',
     hebrew: 'זוּטוֹ שֶׁל יָם',
     translation: 'The tide of the sea. An item swept away there may be kept even with a siman.',
+    keywords: ['tide', 'sea'],
   },
   {
     id: 'bm21b-w-river',
     kind: 'word',
     hebrew: 'שְׁלוּלִיתוֹ שֶׁל נָהָר',
     translation: 'The flooding of a river. Same din as the tide of the sea.',
+    keywords: ['flooding', 'river'],
   },
   {
     id: 'bm21b-w-rachmana',
     kind: 'word',
     hebrew: 'רַחֲמָנָא שַׁרְיֵיהּ',
     translation: 'The Merciful One / the Torah permits it (the finder may keep it).',
+    keywords: ['permits', 'torah permits', 'rachmana'],
   },
   {
     id: 'bm21b-w-ta-shema',
     kind: 'word',
     hebrew: 'תָּא שְׁמַע',
     translation: 'Come and hear — the Gemara brings a proof from a mishna or baraita.',
+    keywords: ['come and hear', 'come hear'],
   },
   {
     id: 'bm21b-w-peiros',
     kind: 'word',
     hebrew: 'פֵּירוֹת מְפוּזָּרִין',
     translation: 'Scattered produce. The mishna says it belongs to the finder.',
+    keywords: ['scattered produce', 'scattered fruit'],
   },
   {
     id: 'bm21b-w-aveidah-midaas',
     kind: 'word',
     hebrew: 'אֲבֵידָה מִדַּעַת',
     translation: 'A loss the owner knew about — he left it on purpose, so it is not ye’ush shelo mida’as.',
+    keywords: ['knew about', 'on purpose', 'conscious loss'],
   },
   {
     id: 'bm21b-w-maos',
     kind: 'word',
     hebrew: 'מָעוֹת מְפוּזָּרוֹת',
     translation: 'Scattered coins.',
+    keywords: ['scattered coins'],
   },
   {
     id: 'bm21b-w-pocket',
     kind: 'word',
     hebrew: 'אָדָם עָשׂוּי לְמַשְׁמֵשׁ בְּכִיסוֹ',
     translation: 'A person tends to feel his money pouch all the time, so he notices quickly if coins fell.',
+    keywords: ['feel his pocket', 'check his pocket', 'money pouch'],
   },
   {
     id: 'bm21b-w-deveilah',
     kind: 'word',
     hebrew: 'עִיגּוּלֵי דְבֵילָה',
     translation: 'Round cakes of pressed figs.',
+    keywords: ['fig cakes', 'pressed figs'],
   },
   {
     id: 'bm21b-w-loaves',
     kind: 'word',
     hebrew: 'כִּכָּרוֹת שֶׁל נַחְתּוֹם',
     translation: 'Baker’s loaves. Heavy, so the owner notices when they fall.',
+    keywords: ['baker', 'loaves'],
   },
   {
     id: 'bm21b-w-argaman',
     kind: 'word',
     hebrew: 'לְשׁוֹנוֹת שֶׁל אַרְגָּמָן',
     translation: 'Strips of purple wool — valuable, so the owner feels around for them.',
+    keywords: ['purple', 'wool', 'argaman'],
   },
   {
     id: 'bm21b-w-shuls',
     kind: 'word',
     hebrew: 'בָּתֵּי כְנֵסִיּוֹת וּבָתֵּי מִדְרָשׁוֹת',
     translation: 'Synagogues and study halls — public places where owners despair of lost coins.',
+    keywords: ['synagogues', 'study halls', 'shuls'],
   },
   {
     id: 'bm21b-w-leket',
     kind: 'word',
     hebrew: 'לֶקֶט',
     translation: 'Gleanings left for the poor.',
+    keywords: ['gleanings', 'leket'],
   },
   {
     id: 'bm21b-w-nemushot',
@@ -263,36 +286,42 @@ const WORDS: PackItem[] = [
     hebrew: 'נָמוֹשׁוֹת',
     translation:
       'The last people through the field. R’ Yochanan: elderly walking on a cane. Reish Lakish: gleaners after gleaners.',
+    keywords: ['last people', 'elderly', 'gleaners', 'nemushot'],
   },
   {
     id: 'bm21b-w-ketziot',
     kind: 'word',
     hebrew: 'קְצִיעוֹת',
     translation: 'Dried figs.',
+    keywords: ['dried figs'],
   },
   {
     id: 'bm21b-w-chazuto',
     kind: 'word',
     hebrew: 'חָזוּתוֹ מוֹכִיחַ עָלָיו',
     translation: 'Its look identifies the owner — olives look like the ones still on that tree.',
+    keywords: ['look identifies', 'appearance', 'identifies'],
   },
   {
     id: 'bm21b-w-teena',
     kind: 'word',
     hebrew: 'תְּאֵנָה עִם נְפִילָתָהּ נִמְאֶסֶת',
     translation: 'A fig becomes disgusting when it falls, so the owner does not want it back.',
+    keywords: ['fig', 'disgusting', 'falls'],
   },
   {
     id: 'bm21b-w-ganav',
     kind: 'word',
     hebrew: 'גַּנָּב',
     translation: 'A thief who steals in secret.',
+    keywords: ['thief', 'secret'],
   },
   {
     id: 'bm21b-w-gazlan',
     kind: 'word',
     hebrew: 'גַּזְלָן',
     translation: 'A robber who takes openly.',
+    keywords: ['robber', 'openly'],
   },
 ]
 
@@ -416,6 +445,7 @@ const QUESTIONS: PackItem[] = [
     prompt: 'What does ye’ush shelo mida’as mean?',
     translation:
       'Despair that is not conscious: the owner does not know he lost the object yet, but would give up on it if he knew.',
+    keywords: ['despair', 'not know', 'unconscious', 'without knowledge', 'shelo midaas'],
   },
   {
     id: 'bm21b-q-abaye',
@@ -424,6 +454,7 @@ const QUESTIONS: PackItem[] = [
     prompt: 'What does Abaye hold about ye’ush shelo mida’as?',
     translation:
       'לא הוי ייאוש. It is not ye’ush, because he never actually despaired. The finder may not keep it.',
+    keywords: ['not yeush', 'not despair', 'may not keep', 'lo havei'],
   },
   {
     id: 'bm21b-q-rava',
@@ -432,6 +463,7 @@ const QUESTIONS: PackItem[] = [
     prompt: 'What does Rava hold about ye’ush shelo mida’as?',
     translation:
       'הוי ייאוש — at least on an item with no siman. When the owner finds out, he will despair, so we treat it as ye’ush already.',
+    keywords: ['is yeush', 'will despair', 'no siman', 'havei'],
   },
   {
     id: 'bm21b-q-siman',
@@ -440,6 +472,7 @@ const QUESTIONS: PackItem[] = [
     prompt: 'Do Abaye and Rava argue about an item that has a siman?',
     translation:
       'No. Everyone agrees it is not ye’ush. Even if he later despairs, it already came to the finder in a forbidden way.',
+    keywords: ['no', 'everyone agrees', 'not yeush'],
   },
   {
     id: 'bm21b-q-sea',
@@ -448,6 +481,7 @@ const QUESTIONS: PackItem[] = [
     prompt: 'May you keep something lost in the tide of the sea or a flooding river?',
     translation:
       'Yes. Even if it has a siman, the Torah permits it (רחמנא שרייה).',
+    keywords: ['yes', 'permits', 'keep'],
   },
   {
     id: 'bm21b-q-machlokes',
@@ -456,6 +490,7 @@ const QUESTIONS: PackItem[] = [
     prompt: 'Where exactly is the machlokes of Abaye and Rava?',
     translation:
       'Only on an item with no siman, when the owner does not yet know it fell.',
+    keywords: ['no siman', 'does not know', 'doesnt know'],
   },
   {
     id: 'bm21b-q-produce',
@@ -464,6 +499,7 @@ const QUESTIONS: PackItem[] = [
     prompt: 'Why isn’t “scattered produce belongs to the finder” a proof for Rava?',
     translation:
       'Rav Ukva: we are talking about leftover kernels on the threshing floor — an aveidah mida’as, not ye’ush shelo mida’as.',
+    keywords: ['aveidah midaas', 'knew', 'threshing', 'leftover'],
   },
   {
     id: 'bm21b-q-pocket',
@@ -472,6 +508,7 @@ const QUESTIONS: PackItem[] = [
     prompt: 'Why do scattered coins belong to the finder, according to the Gemara’s answer?',
     translation:
       'R’ Yitzchak: a person constantly feels his pocket, so he knows they fell and despairs. It is not shelo mida’as.',
+    keywords: ['pocket', 'knows', 'feels', 'not shelo'],
   },
   {
     id: 'bm21b-q-nemushot',
@@ -480,6 +517,7 @@ const QUESTIONS: PackItem[] = [
     prompt: 'What are nemushot, according to R’ Yochanan vs Reish Lakish?',
     translation:
       'R’ Yochanan: elderly people walking on a cane. Reish Lakish: gleaners who come after the other gleaners.',
+    keywords: ['elderly', 'cane', 'gleaners'],
   },
   {
     id: 'bm21b-q-olives',
@@ -488,6 +526,16 @@ const QUESTIONS: PackItem[] = [
     prompt: 'Why are olives under the tree forbidden, but fallen figs permitted?',
     translation:
       'Olives look like the ones on that tree, so the owner is known. A fig becomes disgusting when it falls (Rav Pappa), so the owner does not want it.',
+    keywords: ['look', 'identifies', 'disgusting', 'fig'],
+  },
+  {
+    id: 'bm21b-q-ta-shema',
+    kind: 'question',
+    hebrew: 'תָּא שְׁמַע',
+    prompt: 'What does “ta shema” mean when the Gemara says it?',
+    translation:
+      'Come and hear — introducing a source that may prove one side of the dispute.',
+    keywords: ['come and hear', 'come hear', 'proof', 'source'],
   },
 ]
 
@@ -511,4 +559,26 @@ export function mergeDafPack(existing: Card[], pack: Card[]): Card[] {
       consecutiveCorrect: old.consecutiveCorrect,
     }
   })
+}
+
+const DROPPED_PACK_IDS = new Set(['bm21b-w-ta', 'bm21b-w-alma'])
+
+export function refreshLoadedDeck(existing: Card[]): Card[] {
+  const pack = buildDafPack('bava-metzia-21b')
+  const packById = new Map(pack.map((card) => [card.id, card]))
+  return existing
+    .filter((card) => !DROPPED_PACK_IDS.has(card.id))
+    .map((card) => {
+      const fresh = packById.get(card.id)
+      if (!fresh) {
+        return card
+      }
+      return {
+        ...card,
+        kind: fresh.kind,
+        hebrew: fresh.hebrew,
+        prompt: fresh.prompt,
+        keywords: fresh.keywords,
+      }
+    })
 }

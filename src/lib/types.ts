@@ -8,6 +8,7 @@ export type Card = {
   hebrew: string
   translation: string
   prompt?: string
+  keywords?: string[]
   weight: number
   consecutiveCorrect: number
   source: TranslationSource
