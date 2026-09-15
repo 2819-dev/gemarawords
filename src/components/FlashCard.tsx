@@ -1,6 +1,7 @@
 import type { Card } from '../lib/types.ts'
 import { questionFor } from '../lib/answer.ts'
 import { promptIncludesLemma } from '../lib/mixedText.ts'
+import { KindBadge } from './KindBadge.tsx'
 import { MixedText } from './MixedText.tsx'
 
 type FlashCardProps = {
@@ -14,18 +15,16 @@ export function FlashCard({ card }: FlashCardProps) {
   const longHebrew = card.kind === 'sentence' || card.hebrew.length > 16
 
   return (
-    <section className="flex min-h-72 w-full flex-col items-center justify-center overflow-y-auto rounded-3xl border border-gold/40 bg-card px-6 py-5 shadow-md">
-      <p className="mb-3 text-xs font-semibold uppercase tracking-[0.2em] text-ink-soft">
-        {kindLabel(card.kind)}
-      </p>
+    <section className="flex min-h-0 flex-1 flex-col items-center justify-center overflow-y-auto px-1 py-4">
+      <KindBadge kind={card.kind} />
       <MixedText
         text={prompt}
-        className="text-center text-xl font-semibold leading-snug text-ink"
-        hebrewClassName="text-[1.65rem] font-medium"
+        className="mt-5 max-w-lg text-center text-[1.35rem] font-medium leading-snug text-ink sm:text-[1.7rem]"
+        hebrewClassName="text-[1.7rem] font-medium sm:text-[2rem]"
       />
       {showSource ? (
         <p
-          className={`hebrew mt-6 text-center text-ink ${
+          className={`hebrew mt-8 max-w-lg border-r-2 border-gold pr-4 text-right text-ink ${
             longHebrew ? 'text-2xl leading-relaxed' : 'text-5xl leading-snug'
           }`}
           lang="he"
@@ -36,14 +35,4 @@ export function FlashCard({ card }: FlashCardProps) {
       ) : null}
     </section>
   )
-}
-
-function kindLabel(kind: Card['kind']): string {
-  if (kind === 'sentence') {
-    return 'Gemara'
-  }
-  if (kind === 'question') {
-    return 'Question'
-  }
-  return 'Word'
 }

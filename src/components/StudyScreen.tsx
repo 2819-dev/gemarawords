@@ -1,13 +1,17 @@
-import { useState, type FormEvent, type KeyboardEvent } from 'react'
+import { useEffect, useState, type FormEvent, type KeyboardEvent as ReactKeyboardEvent } from 'react'
 import { FlashCard } from './FlashCard.tsx'
 import { MixedText } from './MixedText.tsx'
+import { AppFrame } from './AppFrame.tsx'
 import { checkAnswer, type AnswerCheck } from '../lib/answer.ts'
+import { MASTER_STREAK } from '../lib/scheduler.ts'
 import type { Card } from '../lib/types.ts'
 
 type StudyScreenProps = {
   card: Card
   reviewed: number
+  sessionCorrect: number
   deckSize: number
+  masteredCount: number
   onGrade: (correct: boolean) => void
   onBack: () => void
 }
@@ -15,12 +19,15 @@ type StudyScreenProps = {
 export function StudyScreen({
   card,
   reviewed,
+  sessionCorrect,
   deckSize,
+  masteredCount,
   onGrade,
   onBack,
 }: StudyScreenProps) {
   const [draft, setDraft] = useState('')
   const [result, setResult] = useState<AnswerCheck | null>(null)
+  const progress = deckSize === 0 ? 0 : Math.min(1, masteredCount / deckSize)
 
   function submitAnswer(raw: string) {
     setResult(checkAnswer(card, raw))
@@ -34,7 +41,10 @@ export function StudyScreen({
     submitAnswer(draft)
   }
 
-  function handleKeyDown(event: KeyboardEvent<HTMLTextAreaElement>) {
+  function handleKeyDown(event: ReactKeyboardEvent<HTMLTextAreaElement>) {
+    if (event.nativeEvent.isComposing) {
+      return
+    }
     if (event.key === 'Enter' && !event.shiftKey) {
       event.preventDefault()
       if (draft.trim() && !result) {
@@ -43,97 +53,154 @@ export function StudyScreen({
     }
   }
 
+  useEffect(() => {
+    if (!result) {
+      return
+    }
+    const verdict = result.correct
+    function onKey(event: KeyboardEvent) {
+      if (event.isComposing || event.key !== 'Enter' || event.shiftKey) {
+        return
+      }
+      event.preventDefault()
+      onGrade(verdict)
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [result, onGrade])
+
   return (
-    <main className="mx-auto flex min-h-full max-w-xl flex-col gap-6 px-4 py-8">
-      <div className="flex items-center justify-between gap-3">
-        <button
-          type="button"
-          onClick={onBack}
-          className="text-sm font-semibold text-ink-soft hover:text-ink"
-        >
-          ← Deck
-        </button>
-        <p className="text-sm text-ink-soft">
-          {deckSize} cards · reviewed {reviewed}
-        </p>
-      </div>
-
-      <FlashCard card={card} />
-
-      {result ? (
-        <section className="flex flex-col gap-4" aria-live="polite">
-          <p
-            className={`rounded-2xl px-4 py-3 text-center text-lg font-semibold ${
-              result.correct ? 'bg-olive/15 text-olive' : 'bg-brick/10 text-brick'
-            }`}
+    <AppFrame>
+      <main className="mx-auto flex h-full max-w-2xl flex-col overflow-hidden px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-4 sm:px-6">
+        <header className="flex items-center justify-between gap-3">
+          <button
+            type="button"
+            onClick={onBack}
+            className="rounded-full px-2 py-1 text-sm font-semibold text-ink-soft hover:text-ink"
           >
-            {feedbackCopy(result)}
+            ← Deck
+          </button>
+          <p className="text-sm text-ink-soft">
+            {sessionCorrect}/{reviewed || 0} this session
           </p>
-          <div className="rounded-3xl border border-gold/40 bg-card px-6 py-5 shadow-md">
-            <p className="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-ink-soft">
+        </header>
+
+        <div className="mt-4">
+          <div className="mb-1.5 flex items-center justify-between text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-soft">
+            <span>Solid in this deck</span>
+            <span>
+              {masteredCount}/{deckSize}
+            </span>
+          </div>
+          <div
+            className="h-1.5 overflow-hidden rounded-full bg-parchment-dark"
+            role="progressbar"
+            aria-valuemin={0}
+            aria-valuemax={deckSize}
+            aria-valuenow={masteredCount}
+            aria-label={`${masteredCount} of ${deckSize} cards solid`}
+          >
+            <div
+              className="h-full rounded-full bg-burgundy transition-[width] duration-300"
+              style={{ width: `${progress * 100}%` }}
+            />
+          </div>
+        </div>
+
+        <div className="study-enter flex min-h-0 flex-1 flex-col">
+          <FlashCard card={card} />
+        </div>
+
+        {result ? (
+          <section
+            className={`mb-4 rounded-[1.5rem] border px-5 py-5 ${
+              result.correct
+                ? 'border-olive/25 bg-olive/10'
+                : 'border-brick/20 bg-brick/10'
+            }`}
+            aria-live="polite"
+          >
+            <p
+              className={`font-display text-2xl font-medium ${
+                result.correct ? 'text-olive' : 'text-brick'
+              }`}
+            >
+              {feedbackCopy(result)}
+            </p>
+            <p className="mt-4 text-[11px] font-semibold uppercase tracking-[0.18em] text-ink-soft">
               Answer
             </p>
-            <p className="text-lg font-medium leading-snug text-ink">
+            <p className="mt-1 text-lg font-medium leading-snug text-ink">
               <MixedText text={card.translation} hebrewClassName="text-xl font-medium" />
             </p>
             {draft.trim() ? (
-              <p className="mt-4 text-sm text-ink-soft">
-                Your answer: <MixedText text={draft.trim()} />
+              <p className="mt-3 text-sm text-ink-soft">
+                You said: <MixedText text={draft.trim()} />
               </p>
             ) : null}
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            <button
-              type="button"
-              onClick={() => onGrade(!result.correct)}
-              className="rounded-2xl border border-parchment-dark bg-card px-4 py-3 text-base font-semibold text-ink"
-            >
-              {result.correct ? 'I was wrong' : 'I was right'}
-            </button>
-            <button
-              type="button"
-              onClick={() => onGrade(result.correct)}
-              className="rounded-2xl bg-ink px-4 py-3 text-base font-semibold text-parchment"
-            >
-              Continue
-            </button>
-          </div>
-        </section>
-      ) : (
-        <form onSubmit={handleSubmit} className="flex flex-col gap-3">
-          <label htmlFor="answer" className="text-sm font-semibold">
-            Your answer
-          </label>
-          <textarea
-            id="answer"
-            autoFocus
-            value={draft}
-            onChange={(event) => setDraft(event.target.value)}
-            onKeyDown={handleKeyDown}
-            rows={3}
-            dir="ltr"
-            placeholder="Type the pshat"
-            className="w-full resize-y rounded-2xl border border-parchment-dark bg-card px-4 py-3 text-lg text-ink outline-none ring-gold/40 focus:ring-2"
-          />
-          <div className="grid grid-cols-2 gap-3">
-            <button
-              type="button"
-              onClick={() => submitAnswer('')}
-              className="rounded-2xl border border-parchment-dark bg-card px-4 py-3 text-base font-semibold text-ink"
-            >
-              I don’t know
-            </button>
-            <button
-              type="submit"
-              disabled={!draft.trim()}
-              className="rounded-2xl bg-burgundy px-4 py-3 text-base font-semibold text-parchment disabled:cursor-not-allowed disabled:opacity-40"
-            >
-              Check
-            </button>
-          </div>
-        </form>
-      )}
-    </main>
+            {card.consecutiveCorrect + (result.correct ? 1 : 0) >= MASTER_STREAK &&
+            result.correct ? (
+              <p className="mt-3 text-sm text-olive">Twice in a row — this one is solid.</p>
+            ) : null}
+            <div className="mt-5 grid grid-cols-2 gap-3">
+              <button
+                type="button"
+                onClick={() => onGrade(!result.correct)}
+                className="rounded-full border border-ink/15 bg-card px-4 py-3 text-base font-semibold text-ink"
+              >
+                {result.correct ? 'I was wrong' : 'I was right'}
+              </button>
+              <button
+                type="button"
+                onClick={() => onGrade(result.correct)}
+                className="rounded-full bg-ink px-4 py-3 text-base font-semibold text-parchment"
+              >
+                Continue
+              </button>
+            </div>
+          </section>
+        ) : (
+          <form
+            onSubmit={handleSubmit}
+            className="sticky bottom-0 z-10 -mx-4 mt-auto border-t border-gold/20 bg-parchment/95 px-4 py-4 backdrop-blur-sm sm:-mx-6 sm:px-6"
+          >
+            <label htmlFor="answer" className="sr-only">
+              Your answer
+            </label>
+            <textarea
+              id="answer"
+              autoFocus
+              value={draft}
+              onChange={(event) => setDraft(event.target.value)}
+              onKeyDown={handleKeyDown}
+              rows={2}
+              dir="ltr"
+              autoComplete="off"
+              autoCorrect="off"
+              spellCheck
+              placeholder="Type the pshat"
+              className="w-full resize-none rounded-2xl border border-parchment-dark bg-card px-4 py-3 text-lg text-ink outline-none ring-gold/40 focus:ring-2"
+            />
+            <div className="mt-3 grid grid-cols-2 gap-3">
+              <button
+                type="button"
+                onClick={() => submitAnswer('')}
+                className="rounded-full border border-ink/15 bg-card px-4 py-3 text-base font-semibold text-ink"
+              >
+                I don’t know
+              </button>
+              <button
+                type="submit"
+                disabled={!draft.trim()}
+                className="rounded-full bg-burgundy px-4 py-3 text-base font-semibold text-parchment disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                Check
+              </button>
+            </div>
+          </form>
+        )}
+      </main>
+    </AppFrame>
   )
 }
 
