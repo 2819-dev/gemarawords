@@ -15,16 +15,19 @@ export function FlashCard({ card }: FlashCardProps) {
   const longHebrew = card.kind === 'sentence' || card.hebrew.length > 16
 
   return (
-    <section className="flex min-h-0 flex-1 flex-col items-center justify-center overflow-y-auto px-1 py-4">
+    <section className="flex min-h-0 flex-1 flex-col items-center justify-center overflow-y-auto px-5 py-6 sm:px-8">
       <KindBadge kind={card.kind} />
+      <p className="mt-3 text-center text-[11px] font-semibold uppercase tracking-[0.18em] text-muted">
+        {hintFor(card.kind)}
+      </p>
       <MixedText
         text={prompt}
-        className="mt-5 max-w-lg text-center text-[1.35rem] font-medium leading-snug text-ink sm:text-[1.7rem]"
+        className="mt-4 max-w-lg text-center text-[1.35rem] font-medium leading-snug text-ink sm:text-[1.7rem]"
         hebrewClassName="text-[1.7rem] font-medium sm:text-[2rem]"
       />
       {showSource ? (
         <p
-          className={`hebrew mt-8 max-w-lg border-r-2 border-accent pr-4 text-right text-ink ${
+          className={`hebrew mt-8 w-full max-w-lg rounded-2xl bg-canvas px-4 py-4 text-right text-ink shadow-[inset_0_0_0_1px_var(--color-line)] ${
             longHebrew ? 'text-2xl leading-relaxed' : 'text-5xl leading-snug'
           }`}
           lang="he"
@@ -35,4 +38,14 @@ export function FlashCard({ card }: FlashCardProps) {
       ) : null}
     </section>
   )
+}
+
+function hintFor(kind: Card['kind']): string {
+  if (kind === 'sentence') {
+    return 'Say the pshat — in English'
+  }
+  if (kind === 'question') {
+    return 'The sugya, not the wording'
+  }
+  return 'What does this mean?'
 }

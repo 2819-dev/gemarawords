@@ -10,6 +10,7 @@ type StudyScreenProps = {
   card: Card
   reviewed: number
   sessionCorrect: number
+  sessionStreak: number
   deckSize: number
   masteredCount: number
   onGrade: (correct: boolean) => void
@@ -20,6 +21,7 @@ export function StudyScreen({
   card,
   reviewed,
   sessionCorrect,
+  sessionStreak,
   deckSize,
   masteredCount,
   onGrade,
@@ -28,6 +30,8 @@ export function StudyScreen({
   const [draft, setDraft] = useState('')
   const [result, setResult] = useState<AnswerCheck | null>(null)
   const progress = deckSize === 0 ? 0 : Math.min(1, masteredCount / deckSize)
+  const solidNow = Boolean(result?.correct && card.consecutiveCorrect + 1 >= MASTER_STREAK)
+  const liveStreak = result ? (result.correct ? sessionStreak + 1 : 0) : sessionStreak
 
   function submitAnswer(raw: string) {
     setResult(checkAnswer(card, raw))
@@ -80,9 +84,16 @@ export function StudyScreen({
           >
             ← Deck
           </button>
-          <p className="text-sm text-muted">
-            {sessionCorrect}/{reviewed || 0} this session
-          </p>
+          <div className="flex flex-wrap items-center justify-end gap-2">
+            {liveStreak > 1 ? (
+              <p className="rounded-full bg-accent/10 px-3 py-1 text-sm font-semibold text-accent">
+                {liveStreak} in a row
+              </p>
+            ) : null}
+            <p className="text-sm text-muted">
+              {sessionCorrect}/{reviewed || 0} this session
+            </p>
+          </div>
         </header>
 
         <div className="mt-4">
@@ -93,7 +104,7 @@ export function StudyScreen({
             </span>
           </div>
           <div
-            className="h-1.5 overflow-hidden rounded-full bg-line"
+            className="h-2 overflow-hidden rounded-full bg-line"
             role="progressbar"
             aria-valuemin={0}
             aria-valuemax={deckSize}
@@ -107,28 +118,42 @@ export function StudyScreen({
           </div>
         </div>
 
-        <div className="study-enter flex min-h-0 flex-1 flex-col">
+        <div
+          className={`study-enter quiz-card mt-5 flex min-h-0 flex-1 flex-col ${
+            result ? (result.correct ? 'quiz-pop' : 'quiz-shake') : ''
+          }`}
+        >
           <FlashCard card={card} />
         </div>
 
         {result ? (
           <section
-            className={`mb-4 rounded-[1.5rem] border px-5 py-5 ${
+            className={`mt-4 mb-2 rounded-[1.5rem] border px-5 py-5 ${
               result.correct
                 ? 'border-ok/25 bg-ok/10'
                 : 'border-bad/20 bg-bad/10'
             }`}
             aria-live="polite"
           >
-            <p
-              className={`font-display text-2xl font-medium ${
-                result.correct ? 'text-ok' : 'text-bad'
-              }`}
-            >
-              {feedbackCopy(result)}
-            </p>
+            <div className="flex items-start gap-3">
+              <ResultMark ok={result.correct} />
+              <div className="min-w-0 flex-1">
+                <p
+                  className={`font-display text-2xl font-medium ${
+                    result.correct ? 'text-ok' : 'text-bad'
+                  }`}
+                >
+                  {feedbackCopy(result, solidNow)}
+                </p>
+                {solidNow ? (
+                  <p className="mt-1 text-sm font-semibold text-ok">
+                    Twice in a row — this one is solid.
+                  </p>
+                ) : null}
+              </div>
+            </div>
             <p className="mt-4 text-[11px] font-semibold uppercase tracking-[0.18em] text-muted">
-              Answer
+              The pshat
             </p>
             <p className="mt-1 text-lg font-medium leading-snug text-ink">
               <MixedText text={card.translation} hebrewClassName="text-xl font-medium" />
@@ -138,22 +163,18 @@ export function StudyScreen({
                 You said: <MixedText text={draft.trim()} />
               </p>
             ) : null}
-            {card.consecutiveCorrect + (result.correct ? 1 : 0) >= MASTER_STREAK &&
-            result.correct ? (
-              <p className="mt-3 text-sm text-ok">Twice in a row — this one is solid.</p>
-            ) : null}
             <div className="mt-5 grid grid-cols-2 gap-3">
               <button
                 type="button"
                 onClick={() => onGrade(!result.correct)}
-                className="rounded-full border border-ink/15 bg-card px-4 py-3 text-base font-semibold text-ink"
+                className="pressable rounded-full border border-ink/15 bg-card px-4 py-3 text-base font-semibold text-ink"
               >
                 {result.correct ? 'I was wrong' : 'I was right'}
               </button>
               <button
                 type="button"
                 onClick={() => onGrade(result.correct)}
-                className="rounded-full bg-ink px-4 py-3 text-base font-semibold text-white"
+                className="pressable rounded-full bg-ink px-4 py-3 text-base font-semibold text-white shadow-md"
               >
                 Continue
               </button>
@@ -162,10 +183,10 @@ export function StudyScreen({
         ) : (
           <form
             onSubmit={handleSubmit}
-            className="sticky bottom-0 z-10 -mx-4 mt-auto border-t border-line bg-canvas/95 px-4 py-4 backdrop-blur-sm sm:-mx-6 sm:px-6"
+            className="sticky bottom-0 z-10 -mx-4 mt-4 border-t border-line bg-canvas/90 px-4 py-4 backdrop-blur-md sm:-mx-6 sm:px-6"
           >
             <label htmlFor="answer" className="sr-only">
-              Your answer
+              Your answer in English
             </label>
             <textarea
               id="answer"
@@ -179,20 +200,20 @@ export function StudyScreen({
               autoCorrect="off"
               spellCheck
               placeholder="Type the pshat in English"
-              className="w-full resize-none rounded-2xl border border-line bg-card px-4 py-3 text-lg text-ink outline-none ring-accent/40 focus:ring-2"
+              className="w-full resize-none rounded-2xl border border-line bg-card px-4 py-3 text-lg text-ink shadow-[0_8px_24px_-18px_rgba(20,22,28,0.35)] outline-none ring-accent/40 focus:ring-2"
             />
             <div className="mt-3 grid grid-cols-2 gap-3">
               <button
                 type="button"
                 onClick={() => submitAnswer('')}
-                className="rounded-full border border-ink/15 bg-card px-4 py-3 text-base font-semibold text-ink"
+                className="pressable rounded-full border border-ink/15 bg-card px-4 py-3 text-base font-semibold text-ink"
               >
                 I don’t know
               </button>
               <button
                 type="submit"
                 disabled={!draft.trim()}
-                className="rounded-full bg-accent px-4 py-3 text-base font-semibold text-white disabled:cursor-not-allowed disabled:opacity-40"
+                className="pressable rounded-full bg-accent px-4 py-3 text-base font-semibold text-white shadow-md disabled:cursor-not-allowed disabled:opacity-40 disabled:shadow-none"
               >
                 Check
               </button>
@@ -204,15 +225,31 @@ export function StudyScreen({
   )
 }
 
-function feedbackCopy(result: AnswerCheck): string {
+function ResultMark({ ok }: { ok: boolean }) {
+  return (
+    <span
+      className={`mt-0.5 inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-lg font-bold text-white ${
+        ok ? 'bg-ok' : 'bg-bad'
+      }`}
+      aria-hidden="true"
+    >
+      {ok ? '✓' : '!'}
+    </span>
+  )
+}
+
+function feedbackCopy(result: AnswerCheck, solidNow: boolean): string {
   if (result.correct) {
-    return 'That looks right.'
+    if (solidNow) {
+      return 'Locked in.'
+    }
+    return 'That’s the pshat.'
   }
   if (result.reason === 'empty') {
-    return 'Here is the answer.'
+    return 'Here’s the pshat.'
   }
   if (result.reason === 'echo') {
     return 'Say it in English — copying the Hebrew is not the pshat.'
   }
-  return 'Not quite.'
+  return 'Not yet.'
 }

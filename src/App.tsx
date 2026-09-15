@@ -28,6 +28,7 @@ export default function App() {
   const [currentId, setCurrentId] = useState<string | null>(null)
   const [reviewed, setReviewed] = useState(0)
   const [sessionCorrect, setSessionCorrect] = useState(0)
+  const [sessionStreak, setSessionStreak] = useState(0)
 
   useEffect(() => {
     saveDeck(cards)
@@ -188,6 +189,7 @@ export default function App() {
     setCurrentId(first.id)
     setReviewed(0)
     setSessionCorrect(0)
+    setSessionStreak(0)
     setScreen('study')
   }
 
@@ -200,6 +202,7 @@ export default function App() {
       const nextCards = cards.map((card) => (card.id === graded.id ? graded : card))
       setCards(nextCards)
       setReviewed((count) => count + 1)
+      setSessionStreak((count) => (correct ? count + 1 : 0))
       if (correct) {
         setSessionCorrect((count) => count + 1)
       }
@@ -219,6 +222,7 @@ export default function App() {
         card={current}
         reviewed={reviewed}
         sessionCorrect={sessionCorrect}
+        sessionStreak={sessionStreak}
         deckSize={cards.length}
         masteredCount={masteredCount}
         onGrade={handleGrade}
