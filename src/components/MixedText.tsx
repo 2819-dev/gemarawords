@@ -1,4 +1,4 @@
-import { groupMixedParts } from '../lib/mixedText.ts'
+import { splitMixedText } from '../lib/mixedText.ts'
 
 type MixedTextProps = {
   text: string
@@ -9,31 +9,13 @@ type MixedTextProps = {
 export function MixedText({ text, className, hebrewClassName }: MixedTextProps) {
   return (
     <span className={className} dir="ltr">
-      {groupMixedParts(text).map((group, index) =>
-        group.hebrew ? (
-          <span
-            key={index}
-            className="hebrew-phrase"
-            dir="ltr"
-            style={{
-              display: 'inline-block',
-              overflow: 'hidden',
-              verticalAlign: 'baseline',
-            }}
-          >
-            {group.words.map((word, wordIndex) => (
-              <span
-                key={wordIndex}
-                className={`hebrew ${hebrewClassName ?? ''}`}
-                lang="he"
-                style={{ float: 'left', marginRight: '0.33em' }}
-              >
-                {word}
-              </span>
-            ))}
-          </span>
+      {splitMixedText(text).map((part, index) =>
+        part.hebrew ? (
+          <bdi key={index} className={`hebrew ${hebrewClassName ?? ''}`} lang="he">
+            {part.text}
+          </bdi>
         ) : (
-          <span key={index}>{group.text}</span>
+          <span key={index}>{part.text}</span>
         ),
       )}
     </span>
