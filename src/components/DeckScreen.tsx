@@ -1,6 +1,8 @@
 import { useRef, useState, type DragEvent, type FormEvent } from 'react'
 import { PAGES, type DafPage } from '../lib/daf.ts'
+import { questionFor } from '../lib/answer.ts'
 import type { Card } from '../lib/types.ts'
+import { MixedText } from './MixedText.tsx'
 
 type DeckScreenProps = {
   cards: Card[]
@@ -78,9 +80,9 @@ export function DeckScreen({
           Daf Flashcards
         </h1>
         <p className="mt-2 text-ink-soft">
-          Pick a daf, then answer questions on Hebrew and Aramaic words,
-          phrases, sentences, and the sugya. Type what you think, then see
-          if you got it. Missed cards come back more often.
+          Pick a daf. You’ll get words, lines of Gemara, and questions on the
+          sugya. Answers are in the language of the Gemara, not modern
+          English. Type what you think; missed cards come back more often.
         </p>
       </header>
 
@@ -159,18 +161,13 @@ export function DeckScreen({
                 <div className="flex items-start justify-between gap-3">
                   <div>
                     <p className="text-xs font-semibold uppercase tracking-wide text-ink-soft">
-                      {card.kind}
+                      {card.kind === 'sentence' ? 'gemara' : card.kind}
                     </p>
-                    <p
-                      className={
-                        card.prompt
-                          ? 'mt-1 text-lg text-ink'
-                          : 'hebrew mt-1 text-2xl text-ink'
-                      }
-                      lang={card.prompt ? 'en' : 'he'}
-                      dir={card.prompt ? 'ltr' : 'rtl'}
-                    >
-                      {card.prompt ?? card.hebrew}
+                    <p className="mt-1 text-lg text-ink">
+                      <MixedText
+                        text={questionFor(card)}
+                        hebrewClassName="text-xl font-medium"
+                      />
                     </p>
                   </div>
                   <button

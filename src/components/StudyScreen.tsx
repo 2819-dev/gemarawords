@@ -1,5 +1,6 @@
 import { useState, type FormEvent, type KeyboardEvent } from 'react'
 import { FlashCard } from './FlashCard.tsx'
+import { MixedText } from './MixedText.tsx'
 import { checkAnswer, type AnswerCheck } from '../lib/answer.ts'
 import type { Card } from '../lib/types.ts'
 
@@ -72,12 +73,12 @@ export function StudyScreen({
             <p className="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-ink-soft">
               Answer
             </p>
-            <p className="text-lg font-medium leading-snug text-ink" dir="ltr">
-              {card.translation}
+            <p className="text-lg font-medium leading-snug text-ink">
+              <MixedText text={card.translation} hebrewClassName="text-xl font-medium" />
             </p>
             {draft.trim() ? (
-              <p className="mt-4 text-sm text-ink-soft" dir="ltr">
-                Your answer: {draft.trim()}
+              <p className="mt-4 text-sm text-ink-soft">
+                Your answer: <MixedText text={draft.trim()} />
               </p>
             ) : null}
           </div>

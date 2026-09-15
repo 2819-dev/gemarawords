@@ -14,16 +14,16 @@ function card(partial: Partial<Card> & Pick<Card, 'hebrew' | 'translation'>): Ca
 }
 
 describe('questionFor', () => {
-  it('asks what a word means', () => {
+  it('asks what a word means, with the Hebrew in the question', () => {
     expect(questionFor(card({ hebrew: 'הָוֵי', translation: 'is' }))).toBe(
-      'What does this word mean?',
+      'What does הָוֵי mean?',
     )
   })
 
-  it('asks what a sentence means', () => {
+  it('asks what the Gemara is saying', () => {
     expect(
       questionFor(card({ kind: 'sentence', hebrew: 'תָּא שְׁמַע', translation: 'come and hear' })),
-    ).toBe('What does this mean?')
+    ).toBe('What is the Gemara saying here?')
   })
 
   it('uses the written prompt for questions', () => {
@@ -32,11 +32,11 @@ describe('questionFor', () => {
         card({
           kind: 'question',
           hebrew: 'סִימָן',
-          prompt: 'What is a siman?',
-          translation: 'An identifying mark',
+          prompt: 'What does סִימָן mean?',
+          translation: 'a mark to identify it',
         }),
       ),
-    ).toBe('What is a siman?')
+    ).toBe('What does סִימָן mean?')
   })
 })
 
@@ -100,8 +100,8 @@ describe('checkAnswer', () => {
     const result = checkAnswer(
       card({
         hebrew: 'יֵאוּשׁ',
-        translation: 'Despair of recovering a lost object.',
-        keywords: ['despair', 'yeush'],
+        translation: 'Giving up hope',
+        keywords: ['giving up hope', 'yeush'],
       }),
       'ye’ush',
     )
@@ -113,12 +113,11 @@ describe('checkAnswer', () => {
       card({
         kind: 'question',
         hebrew: 'יֵאוּשׁ שֶׁלֹּא מִדַּעַת',
-        prompt: 'What does ye’ush shelo mida’as mean?',
-        translation:
-          'Despair that is not conscious: the owner does not know he lost the object yet.',
-        keywords: ['despair', 'not know', 'unconscious'],
+        prompt: 'What does יֵאוּשׁ שֶׁלֹּא מִדַּעַת mean?',
+        translation: 'Giving up hope without knowledge',
+        keywords: ['giving up hope', 'without knowledge'],
       }),
-      'the owner does not know he lost it',
+      'giving up hope without knowledge',
     )
     expect(result.correct).toBe(true)
   })

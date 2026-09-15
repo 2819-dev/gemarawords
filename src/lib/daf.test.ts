@@ -18,9 +18,17 @@ describe('Bava Metzia 21b pack', () => {
     expect(pack.some((card) => card.hebrew === 'תָּא שְׁמַע')).toBe(true)
     expect(pack.some((card) => card.hebrew === 'תָּא')).toBe(false)
     expect(pack.some((card) => card.hebrew === 'עָלְמָא')).toBe(false)
-    expect(pack.some((card) => card.kind === 'question' && card.prompt?.includes('shelo'))).toBe(
+    expect(pack.some((card) => card.kind === 'question' && card.prompt?.includes('יֵאוּשׁ'))).toBe(
       true,
     )
+    expect(
+      pack
+        .filter((card) => card.kind === 'question')
+        .every((card) => card.prompt && /[\u0590-\u05FF]/.test(card.prompt)),
+    ).toBe(true)
+    expect(pack.some((card) => /unconscious/i.test(card.translation))).toBe(false)
+    const shelo = pack.find((card) => card.hebrew === 'יֵאוּשׁ שֶׁלֹּא מִדַּעַת')
+    expect(shelo?.translation).toMatch(/Giving up hope without knowledge/i)
     expect(new Set(pack.map((card) => card.id)).size).toBe(pack.length)
   })
 
@@ -34,7 +42,7 @@ describe('Bava Metzia 21b pack', () => {
     expect(merged[1]?.weight).toBe(1)
   })
 
-  it('drops fragment cards and copies keywords onto a saved deck', () => {
+  it('drops old pack cards and refreshes the answers', () => {
     const pack = buildDafPack('bava-metzia-21b')
     const stale: Card[] = [
       {
@@ -48,13 +56,17 @@ describe('Bava Metzia 21b pack', () => {
       },
       {
         ...pack[0]!,
+        translation: 'old modern gloss',
         keywords: undefined,
         weight: 9,
       },
     ]
     const refreshed = refreshLoadedDeck(stale)
     expect(refreshed.some((card) => card.id === 'bm21b-w-ta')).toBe(false)
-    expect(refreshed[0]?.weight).toBe(9)
-    expect(refreshed[0]?.keywords?.length).toBeGreaterThan(0)
+    const first = refreshed.find((card) => card.id === pack[0]?.id)
+    expect(first?.weight).toBe(9)
+    expect(first?.translation).toBe(pack[0]?.translation)
+    expect(first?.keywords?.length).toBeGreaterThan(0)
+    expect(refreshed.length).toBeGreaterThanOrEqual(pack.length)
   })
 })

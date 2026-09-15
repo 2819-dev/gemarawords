@@ -81,9 +81,9 @@ export function questionFor(card: Card): string {
     return card.prompt
   }
   if (card.kind === 'sentence') {
-    return 'What does this mean?'
+    return 'What is the Gemara saying here?'
   }
-  return 'What does this word mean?'
+  return `What does ${card.hebrew} mean?`
 }
 
 export function normalizeAnswer(text: string): string {
