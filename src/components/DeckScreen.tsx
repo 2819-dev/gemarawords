@@ -227,7 +227,7 @@ export function DeckScreen({
                   disabled={!canStart}
                   className="pressable flex-1 rounded-full bg-accent px-5 py-3.5 text-lg font-semibold text-white shadow-md disabled:cursor-not-allowed disabled:opacity-40 disabled:shadow-none"
                 >
-                  {startLabel(solid, cards.length)}
+                  {startLabel(solid, cards.length, shaky, lastRound)}
                 </button>
               ) : null}
               <button
@@ -425,7 +425,7 @@ export function DeckScreen({
                   onClick={onStart}
                   className="pressable mt-2 w-full rounded-full bg-accent px-5 py-3.5 text-base font-semibold text-white shadow-md"
                 >
-                  {startLabel(solid, cards.length)}
+                  {startLabel(solid, cards.length, shaky, lastRound)}
                 </button>
               ) : null}
             </>
@@ -626,11 +626,16 @@ function ProgressRing({ value, total }: { value: number; total: number }) {
   )
 }
 
-function startLabel(solid: number, total: number): string {
+function startLabel(
+  solid: number,
+  total: number,
+  shaky: number,
+  lastRound: RoundSummary | null,
+): string {
   if (total > 0 && solid >= total) {
     return 'Review again'
   }
-  if (solid > 0) {
+  if (solid > 0 || shaky > 0 || (lastRound && lastRound.reviewed > 0)) {
     return 'Keep going'
   }
   return 'Learn this sugya'
