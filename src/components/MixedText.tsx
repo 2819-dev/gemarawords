@@ -1,5 +1,7 @@
 import { splitMixedText } from '../lib/mixedText.ts'
 
+const LRM = '\u200E'
+
 type MixedTextProps = {
   text: string
   className?: string
@@ -11,9 +13,12 @@ export function MixedText({ text, className, hebrewClassName }: MixedTextProps) 
     <span className={className} dir="ltr">
       {splitMixedText(text).map((part, index) =>
         part.hebrew ? (
-          <bdi key={index} className={`hebrew ${hebrewClassName ?? ''}`} lang="he">
-            {part.text}
-          </bdi>
+          <span key={index}>
+            <bdi className={`hebrew ${hebrewClassName ?? ''}`} lang="he">
+              {part.text}
+            </bdi>
+            {LRM}
+          </span>
         ) : (
           <span key={index}>{part.text}</span>
         ),
