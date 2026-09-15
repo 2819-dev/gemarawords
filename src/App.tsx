@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { DeckScreen } from './components/DeckScreen.tsx'
 import { StudyScreen } from './components/StudyScreen.tsx'
-import { buildDafPack, mergeDafPack, PAGES, refreshLoadedDeck } from './lib/daf.ts'
+import { buildDafPack, PAGES, refreshLoadedDeck } from './lib/daf.ts'
 import { gradeCard, MASTER_STREAK, pickNextCard } from './lib/scheduler.ts'
 import { parseSpreadsheetFile } from './lib/spreadsheet.ts'
 import { loadDeck, saveDeck } from './lib/storage.ts'
@@ -120,7 +120,7 @@ export default function App() {
         setNotice('That daf is not ready yet.')
         return
       }
-      setCards(mergeDafPack(cards, pack))
+      setCards(refreshLoadedDeck(cards))
       const words = pack.filter((card) => card.kind === 'word').length
       const sentences = pack.filter((card) => card.kind === 'sentence').length
       const questions = pack.filter((card) => card.kind === 'question').length
