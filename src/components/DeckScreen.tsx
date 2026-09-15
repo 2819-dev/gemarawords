@@ -155,9 +155,11 @@ export function DeckScreen({
               )}
             </div>
 
-            <div className="flex items-start gap-4">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
               {cards.length > 0 ? (
-                <ProgressRing value={solid} total={cards.length} />
+                <div className="flex justify-center sm:block">
+                  <ProgressRing value={solid} total={cards.length} />
+                </div>
               ) : null}
               <div className="min-w-0 flex-1">
                 <label className="sr-only" htmlFor="daf">
@@ -167,7 +169,7 @@ export function DeckScreen({
                   id="daf"
                   value={selectedPageId}
                   onChange={(event) => onSelectPage(event.target.value)}
-                  className="font-display w-full appearance-none rounded-2xl border border-line bg-canvas px-4 py-3 text-xl text-ink outline-none ring-accent/40 focus:ring-2"
+                  className="font-display w-full appearance-none rounded-2xl border border-line bg-canvas px-4 py-3 text-lg text-ink outline-none ring-accent/40 focus:ring-2 sm:text-xl"
                 >
                   {PAGES.map((page) => (
                     <option key={page.id} value={page.id} disabled={!page.available}>
@@ -387,7 +389,7 @@ export function DeckScreen({
                 <button
                   type="button"
                   onClick={onStart}
-                  className="pressable sticky bottom-4 z-10 mt-2 w-full rounded-full bg-accent px-5 py-3.5 text-base font-semibold text-white shadow-lg"
+                  className="pressable mt-2 w-full rounded-full bg-accent px-5 py-3.5 text-base font-semibold text-white shadow-md"
                 >
                   {startLabel(solid, cards.length)}
                 </button>
@@ -552,5 +554,5 @@ function startLabel(solid: number, total: number): string {
 }
 
 function pageLabel(page: DafPage): string {
-  return `${page.label} — ${page.chapter}`
+  return page.label
 }
