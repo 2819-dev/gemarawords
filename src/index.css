@@ -2,16 +2,23 @@
 
 @theme {
   --font-sans: "Source Sans 3", ui-sans-serif, system-ui, sans-serif;
-  --font-hebrew: "Noto Serif Hebrew", "Frank Ruhl Libre", "Times New Roman", serif;
-  --color-parchment: #f3ead6;
-  --color-parchment-dark: #e4d4b2;
-  --color-ink: #2a1f14;
-  --color-ink-soft: #5c4a38;
-  --color-card: #fffaf0;
-  --color-burgundy: #7a2e2e;
-  --color-olive: #3d5a3a;
+  --font-display: "Fraunces", "Times New Roman", serif;
+  --font-hebrew: "Frank Ruhl Libre", "Noto Serif Hebrew", "Times New Roman", serif;
+  --color-parchment: #f4ead7;
+  --color-parchment-dark: #e3d2ae;
+  --color-ink: #1c140e;
+  --color-ink-soft: #6a5643;
+  --color-card: #fff8eb;
+  --color-burgundy: #6b1d2a;
+  --color-burgundy-deep: #4a141c;
+  --color-olive: #2f5a38;
   --color-brick: #9b3a2f;
-  --color-gold: #c4a35a;
+  --color-gold: #b8923a;
+  --color-gold-soft: #e8d19a;
+}
+
+html {
+  color-scheme: light;
 }
 
 html,
@@ -22,14 +29,27 @@ body,
 
 body {
   margin: 0;
-  background:
-    radial-gradient(circle at top, #fbf6e8, #f3ead6 55%, #ead9b4);
   color: var(--color-ink);
   font-family: var(--font-sans);
+  background-color: var(--color-parchment);
+  background-image:
+    radial-gradient(ellipse 90% 55% at 50% -8%, rgba(107, 29, 42, 0.1), transparent 58%),
+    radial-gradient(circle at 100% 100%, rgba(184, 146, 58, 0.12), transparent 36%),
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 31px,
+      rgba(28, 20, 14, 0.028) 32px
+    );
 }
 
 #root {
   min-height: 100svh;
+}
+
+.font-display {
+  font-family: var(--font-display);
+  font-optical-sizing: auto;
 }
 
 .hebrew {
@@ -37,25 +57,69 @@ body {
   font-feature-settings: "locl" 1;
 }
 
-.card-flip {
-  perspective: 1200px;
+.app-shell {
+  display: grid;
+  grid-template-columns: 10px minmax(0, 1fr);
+  height: 100svh;
+  min-height: 100svh;
 }
 
-.card-flip-inner {
-  position: relative;
-  transform-style: preserve-3d;
-  transition: transform 0.55s ease;
+@media (min-width: 640px) {
+  .app-shell {
+    grid-template-columns: 14px minmax(0, 1fr);
+  }
 }
 
-.card-flip-inner.is-flipped {
-  transform: rotateY(180deg);
+.sefer-spine {
+  background:
+    linear-gradient(
+      180deg,
+      #3f1018 0%,
+      #6b1d2a 32%,
+      #9a4540 50%,
+      #6b1d2a 72%,
+      #2d0c12 100%
+    );
+  box-shadow:
+    inset -1px 0 0 rgba(255, 232, 180, 0.28),
+    6px 0 28px rgba(28, 20, 14, 0.14);
 }
 
-.card-face {
-  backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
+.app-main {
+  min-width: 0;
+  height: 100svh;
+  overflow: auto;
 }
 
-.card-back {
-  transform: rotateY(180deg);
+.gold-rule {
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--color-gold) 18%,
+    var(--color-gold-soft) 50%,
+    var(--color-gold) 82%,
+    transparent
+  );
+}
+
+.study-enter {
+  animation: study-enter 0.38s ease;
+}
+
+@keyframes study-enter {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .study-enter {
+    animation: none;
+  }
 }

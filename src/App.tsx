@@ -1,8 +1,8 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { DeckScreen } from './components/DeckScreen.tsx'
 import { StudyScreen } from './components/StudyScreen.tsx'
 import { buildDafPack, mergeDafPack, PAGES, refreshLoadedDeck } from './lib/daf.ts'
-import { gradeCard, pickNextCard } from './lib/scheduler.ts'
+import { gradeCard, MASTER_STREAK, pickNextCard } from './lib/scheduler.ts'
 import { parseSpreadsheetFile } from './lib/spreadsheet.ts'
 import { loadDeck, saveDeck } from './lib/storage.ts'
 import type { Card, TranslateResult } from './lib/types.ts'
@@ -27,6 +27,7 @@ export default function App() {
   const [error, setError] = useState('')
   const [currentId, setCurrentId] = useState<string | null>(null)
   const [reviewed, setReviewed] = useState(0)
+  const [sessionCorrect, setSessionCorrect] = useState(0)
 
   useEffect(() => {
     saveDeck(cards)
@@ -186,28 +187,40 @@ export default function App() {
     }
     setCurrentId(first.id)
     setReviewed(0)
+    setSessionCorrect(0)
     setScreen('study')
   }
 
-  function handleGrade(correct: boolean) {
-    if (!current) {
-      return
-    }
-    const graded = gradeCard(current, correct)
-    const nextCards = cards.map((card) => (card.id === graded.id ? graded : card))
-    setCards(nextCards)
-    setReviewed((count) => count + 1)
-    const next = pickNextCard(nextCards, graded.id)
-    setCurrentId(next?.id ?? null)
-  }
+  const handleGrade = useCallback(
+    (correct: boolean) => {
+      if (!current) {
+        return
+      }
+      const graded = gradeCard(current, correct)
+      const nextCards = cards.map((card) => (card.id === graded.id ? graded : card))
+      setCards(nextCards)
+      setReviewed((count) => count + 1)
+      if (correct) {
+        setSessionCorrect((count) => count + 1)
+      }
+      const next = pickNextCard(nextCards, graded.id)
+      setCurrentId(next?.id ?? null)
+    },
+    [cards, current],
+  )
 
   if (screen === 'study' && current) {
+    const masteredCount = cards.filter(
+      (card) => card.consecutiveCorrect >= MASTER_STREAK,
+    ).length
     return (
       <StudyScreen
         key={current.id}
         card={current}
         reviewed={reviewed}
+        sessionCorrect={sessionCorrect}
         deckSize={cards.length}
+        masteredCount={masteredCount}
         onGrade={handleGrade}
         onBack={() => setScreen('deck')}
       />
