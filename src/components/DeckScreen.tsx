@@ -299,7 +299,11 @@ export function DeckScreen({
                               {card.hebrew}
                             </span>
                             <span className="mt-1 block truncate text-sm text-muted">
-                              {card.translation.trim() || 'Needs an answer'}
+                              {card.translation.trim() ? (
+                                <MixedText text={card.translation} />
+                              ) : (
+                                'Needs an answer'
+                              )}
                             </span>
                           </span>
                         </button>
