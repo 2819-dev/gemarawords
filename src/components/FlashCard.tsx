@@ -24,7 +24,7 @@ export function FlashCard({ card }: FlashCardProps) {
       />
       {showSource ? (
         <p
-          className={`hebrew mt-8 max-w-lg border-r-2 border-gold pr-4 text-right text-ink ${
+          className={`hebrew mt-8 max-w-lg border-r-2 border-accent pr-4 text-right text-ink ${
             longHebrew ? 'text-2xl leading-relaxed' : 'text-5xl leading-snug'
           }`}
           lang="he"

@@ -76,24 +76,24 @@ export function StudyScreen({
           <button
             type="button"
             onClick={onBack}
-            className="rounded-full px-2 py-1 text-sm font-semibold text-ink-soft hover:text-ink"
+            className="rounded-full px-2 py-1 text-sm font-semibold text-muted hover:text-ink"
           >
             ← Deck
           </button>
-          <p className="text-sm text-ink-soft">
+          <p className="text-sm text-muted">
             {sessionCorrect}/{reviewed || 0} this session
           </p>
         </header>
 
         <div className="mt-4">
-          <div className="mb-1.5 flex items-center justify-between text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-soft">
+          <div className="mb-1.5 flex items-center justify-between text-[11px] font-semibold uppercase tracking-[0.16em] text-muted">
             <span>Solid in this deck</span>
             <span>
               {masteredCount}/{deckSize}
             </span>
           </div>
           <div
-            className="h-1.5 overflow-hidden rounded-full bg-parchment-dark"
+            className="h-1.5 overflow-hidden rounded-full bg-line"
             role="progressbar"
             aria-valuemin={0}
             aria-valuemax={deckSize}
@@ -101,7 +101,7 @@ export function StudyScreen({
             aria-label={`${masteredCount} of ${deckSize} cards solid`}
           >
             <div
-              className="h-full rounded-full bg-burgundy transition-[width] duration-300"
+              className="h-full rounded-full bg-accent transition-[width] duration-300"
               style={{ width: `${progress * 100}%` }}
             />
           </div>
@@ -115,32 +115,32 @@ export function StudyScreen({
           <section
             className={`mb-4 rounded-[1.5rem] border px-5 py-5 ${
               result.correct
-                ? 'border-olive/25 bg-olive/10'
-                : 'border-brick/20 bg-brick/10'
+                ? 'border-ok/25 bg-ok/10'
+                : 'border-bad/20 bg-bad/10'
             }`}
             aria-live="polite"
           >
             <p
               className={`font-display text-2xl font-medium ${
-                result.correct ? 'text-olive' : 'text-brick'
+                result.correct ? 'text-ok' : 'text-bad'
               }`}
             >
               {feedbackCopy(result)}
             </p>
-            <p className="mt-4 text-[11px] font-semibold uppercase tracking-[0.18em] text-ink-soft">
+            <p className="mt-4 text-[11px] font-semibold uppercase tracking-[0.18em] text-muted">
               Answer
             </p>
             <p className="mt-1 text-lg font-medium leading-snug text-ink">
               <MixedText text={card.translation} hebrewClassName="text-xl font-medium" />
             </p>
             {draft.trim() ? (
-              <p className="mt-3 text-sm text-ink-soft">
+              <p className="mt-3 text-sm text-muted">
                 You said: <MixedText text={draft.trim()} />
               </p>
             ) : null}
             {card.consecutiveCorrect + (result.correct ? 1 : 0) >= MASTER_STREAK &&
             result.correct ? (
-              <p className="mt-3 text-sm text-olive">Twice in a row — this one is solid.</p>
+              <p className="mt-3 text-sm text-ok">Twice in a row — this one is solid.</p>
             ) : null}
             <div className="mt-5 grid grid-cols-2 gap-3">
               <button
@@ -153,7 +153,7 @@ export function StudyScreen({
               <button
                 type="button"
                 onClick={() => onGrade(result.correct)}
-                className="rounded-full bg-ink px-4 py-3 text-base font-semibold text-parchment"
+                className="rounded-full bg-ink px-4 py-3 text-base font-semibold text-white"
               >
                 Continue
               </button>
@@ -162,7 +162,7 @@ export function StudyScreen({
         ) : (
           <form
             onSubmit={handleSubmit}
-            className="sticky bottom-0 z-10 -mx-4 mt-auto border-t border-gold/20 bg-parchment/95 px-4 py-4 backdrop-blur-sm sm:-mx-6 sm:px-6"
+            className="sticky bottom-0 z-10 -mx-4 mt-auto border-t border-line bg-canvas/95 px-4 py-4 backdrop-blur-sm sm:-mx-6 sm:px-6"
           >
             <label htmlFor="answer" className="sr-only">
               Your answer
@@ -179,7 +179,7 @@ export function StudyScreen({
               autoCorrect="off"
               spellCheck
               placeholder="Type the pshat"
-              className="w-full resize-none rounded-2xl border border-parchment-dark bg-card px-4 py-3 text-lg text-ink outline-none ring-gold/40 focus:ring-2"
+              className="w-full resize-none rounded-2xl border border-line bg-card px-4 py-3 text-lg text-ink outline-none ring-accent/40 focus:ring-2"
             />
             <div className="mt-3 grid grid-cols-2 gap-3">
               <button
@@ -192,7 +192,7 @@ export function StudyScreen({
               <button
                 type="submit"
                 disabled={!draft.trim()}
-                className="rounded-full bg-burgundy px-4 py-3 text-base font-semibold text-parchment disabled:cursor-not-allowed disabled:opacity-40"
+                className="rounded-full bg-accent px-4 py-3 text-base font-semibold text-white disabled:cursor-not-allowed disabled:opacity-40"
               >
                 Check
               </button>

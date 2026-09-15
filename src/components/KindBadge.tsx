@@ -1,9 +1,9 @@
 import type { Card } from '../lib/types.ts'
 
 const STYLES: Record<Card['kind'], string> = {
-  word: 'bg-burgundy/10 text-burgundy',
-  sentence: 'bg-gold/20 text-ink',
-  question: 'bg-olive/10 text-olive',
+  word: 'bg-accent/10 text-accent',
+  sentence: 'bg-mark/10 text-mark',
+  question: 'bg-ok/10 text-ok',
 }
 
 function kindLabel(kind: Card['kind']): string {

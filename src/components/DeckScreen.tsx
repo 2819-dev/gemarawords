@@ -103,24 +103,24 @@ export function DeckScreen({
     <AppFrame>
       <main className="mx-auto flex min-h-full max-w-2xl flex-col gap-8 px-4 py-6 pb-16 sm:px-6 sm:py-10">
         <header className="flex flex-col items-start gap-3">
-          <p className="hebrew text-4xl leading-none text-burgundy" lang="he" dir="rtl">
+          <p className="hebrew text-4xl leading-none text-accent" lang="he" dir="rtl">
             גמרא
           </p>
           <div>
             <h1 className="font-display text-4xl font-medium tracking-tight text-ink sm:text-5xl">
               Words
             </h1>
-            <div className="gold-rule mt-3 w-24" />
+            <div className="accent-rule mt-3 w-24" />
           </div>
-          <p className="max-w-md text-[1.05rem] leading-relaxed text-ink-soft">
+          <p className="max-w-md text-[1.05rem] leading-relaxed text-muted">
             A typed review of the sugya — words, lines of Gemara, and questions.
             Missed cards come back until you get them twice in a row.
           </p>
         </header>
 
-        <section className="relative overflow-hidden rounded-[1.75rem] border border-gold/35 bg-card shadow-[0_18px_40px_-24px_rgba(28,20,14,0.45)]">
+        <section className="relative overflow-hidden rounded-[1.75rem] border border-line bg-card shadow-[0_18px_40px_-24px_rgba(20,22,28,0.16)]">
           <p
-            className="hebrew pointer-events-none absolute -bottom-6 -left-2 select-none text-[7.5rem] leading-none text-burgundy opacity-[0.08]"
+            className="hebrew pointer-events-none absolute -bottom-6 -left-2 select-none text-[7.5rem] leading-none text-accent opacity-[0.08]"
             lang="he"
             dir="rtl"
             aria-hidden="true"
@@ -129,11 +129,11 @@ export function DeckScreen({
           </p>
           <div className="relative flex flex-col gap-5 p-5 sm:p-7">
             <div className="flex flex-wrap items-center justify-between gap-3">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-gold">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-accent">
                 Today’s daf
               </p>
               {cards.length > 0 ? (
-                <p className="text-sm text-ink-soft">
+                <p className="text-sm text-muted">
                   {solid} solid · {shaky} coming back
                 </p>
               ) : null}
@@ -146,7 +146,7 @@ export function DeckScreen({
               id="daf"
               value={selectedPageId}
               onChange={(event) => onSelectPage(event.target.value)}
-              className="font-display w-full appearance-none rounded-2xl border border-parchment-dark bg-parchment px-4 py-3 text-xl text-ink outline-none ring-gold/40 focus:ring-2"
+              className="font-display w-full appearance-none rounded-2xl border border-line bg-canvas px-4 py-3 text-xl text-ink outline-none ring-accent/40 focus:ring-2"
             >
               {PAGES.map((page) => (
                 <option key={page.id} value={page.id} disabled={!page.available}>
@@ -158,7 +158,7 @@ export function DeckScreen({
             {selected ? (
               <p className="hebrew text-right text-2xl text-ink" lang="he" dir="rtl">
                 {selected.hebrewLabel}
-                <span className="text-ink-soft"> · {selected.chapter}</span>
+                <span className="text-muted"> · {selected.chapter}</span>
               </p>
             ) : null}
 
@@ -169,7 +169,7 @@ export function DeckScreen({
             </dl>
 
             {missing > 0 ? (
-              <p className="rounded-xl bg-brick/10 px-3 py-2 text-sm text-brick">
+              <p className="rounded-xl bg-bad/10 px-3 py-2 text-sm text-bad">
                 {missing} card{missing === 1 ? '' : 's'} still need an answer before
                 you can start.
               </p>
@@ -181,7 +181,7 @@ export function DeckScreen({
                   type="button"
                   onClick={onStart}
                   disabled={!canStart}
-                  className="flex-1 rounded-full bg-burgundy px-5 py-3.5 text-lg font-semibold text-parchment shadow-md disabled:cursor-not-allowed disabled:opacity-40"
+                  className="flex-1 rounded-full bg-accent px-5 py-3.5 text-lg font-semibold text-white shadow-md disabled:cursor-not-allowed disabled:opacity-40"
                 >
                   Start reviewing
                 </button>
@@ -192,8 +192,8 @@ export function DeckScreen({
                 onClick={onLoadDaf}
                 className={
                   cards.length === 0
-                    ? 'flex-1 rounded-full bg-burgundy px-5 py-3.5 text-lg font-semibold text-parchment shadow-md disabled:opacity-50'
-                    : 'rounded-full border border-ink/20 bg-parchment px-5 py-3.5 text-sm font-semibold text-ink disabled:opacity-50 sm:min-w-44'
+                    ? 'flex-1 rounded-full bg-accent px-5 py-3.5 text-lg font-semibold text-white shadow-md disabled:opacity-50'
+                    : 'rounded-full border border-ink/20 bg-canvas px-5 py-3.5 text-sm font-semibold text-ink disabled:opacity-50 sm:min-w-44'
                 }
               >
                 {loadingDaf
@@ -207,17 +207,17 @@ export function DeckScreen({
         </section>
 
         {notice ? (
-          <p className="rounded-2xl bg-olive/10 px-4 py-3 text-sm text-olive">{notice}</p>
+          <p className="rounded-2xl bg-ok/10 px-4 py-3 text-sm text-ok">{notice}</p>
         ) : null}
         {error ? (
-          <p className="rounded-2xl bg-brick/10 px-4 py-3 text-sm text-brick">{error}</p>
+          <p className="rounded-2xl bg-bad/10 px-4 py-3 text-sm text-bad">{error}</p>
         ) : null}
 
         <section className="flex flex-col gap-4">
           <div className="flex items-end justify-between gap-3">
             <div>
               <h2 className="font-display text-2xl font-medium text-ink">Deck</h2>
-              <p className="mt-1 text-sm text-ink-soft">
+              <p className="mt-1 text-sm text-muted">
                 {cards.length === 0
                   ? 'Nothing loaded yet.'
                   : `${cards.length} cards · tap one to edit`}
@@ -227,7 +227,7 @@ export function DeckScreen({
               <button
                 type="button"
                 onClick={onClear}
-                className="text-sm text-ink-soft underline-offset-2 hover:text-brick hover:underline"
+                className="text-sm text-muted underline-offset-2 hover:text-bad hover:underline"
               >
                 Clear all
               </button>
@@ -235,7 +235,7 @@ export function DeckScreen({
           </div>
 
           {cards.length === 0 ? (
-            <p className="rounded-[1.5rem] border border-dashed border-gold/50 bg-card/60 px-5 py-12 text-center text-ink-soft">
+            <p className="rounded-[1.5rem] border border-dashed border-line bg-card/60 px-5 py-12 text-center text-muted">
               Load Bava Metzia 21b to get Hebrew and Aramaic words, lines of
               Gemara, and questions from אלו מציאות.
             </p>
@@ -250,8 +250,8 @@ export function DeckScreen({
                       onClick={() => setFilter(item.id)}
                       className={`rounded-full px-3.5 py-1.5 text-sm font-semibold ${
                         filter === item.id
-                          ? 'bg-ink text-parchment'
-                          : 'border border-parchment-dark bg-card text-ink-soft hover:text-ink'
+                          ? 'bg-ink text-white'
+                          : 'border border-line bg-card text-muted hover:text-ink'
                       }`}
                     >
                       {item.label}
@@ -266,12 +266,12 @@ export function DeckScreen({
                   value={query}
                   onChange={(event) => setQuery(event.target.value)}
                   placeholder="Search Hebrew or English"
-                  className="w-full rounded-full border border-parchment-dark bg-card px-4 py-2.5 text-sm text-ink outline-none ring-gold/40 focus:ring-2"
+                  className="w-full rounded-full border border-line bg-card px-4 py-2.5 text-sm text-ink outline-none ring-accent/40 focus:ring-2"
                 />
               </div>
 
               {visibleCards.length === 0 ? (
-                <p className="rounded-2xl border border-dashed border-parchment-dark px-4 py-8 text-center text-ink-soft">
+                <p className="rounded-2xl border border-dashed border-line px-4 py-8 text-center text-muted">
                   No cards match that filter.
                 </p>
               ) : (
@@ -281,7 +281,7 @@ export function DeckScreen({
                     return (
                       <li
                         key={card.id}
-                        className="overflow-hidden rounded-2xl border border-parchment-dark bg-card"
+                        className="overflow-hidden rounded-2xl border border-line bg-card"
                       >
                         <button
                           type="button"
@@ -298,13 +298,13 @@ export function DeckScreen({
                             >
                               {card.hebrew}
                             </span>
-                            <span className="mt-1 block truncate text-sm text-ink-soft">
+                            <span className="mt-1 block truncate text-sm text-muted">
                               {card.translation.trim() || 'Needs an answer'}
                             </span>
                           </span>
                         </button>
                         {open ? (
-                          <div className="border-t border-parchment-dark px-4 py-4">
+                          <div className="border-t border-line px-4 py-4">
                             <p className="text-sm leading-relaxed text-ink">
                               <MixedText
                                 text={questionFor(card)}
@@ -312,7 +312,7 @@ export function DeckScreen({
                               />
                             </p>
                             <label
-                              className="mt-3 block text-xs font-semibold uppercase tracking-wide text-ink-soft"
+                              className="mt-3 block text-xs font-semibold uppercase tracking-wide text-muted"
                               htmlFor={`answer-${card.id}`}
                             >
                               Answer
@@ -325,13 +325,13 @@ export function DeckScreen({
                                 onTranslationChange(card.id, event.target.value)
                               }
                               rows={card.kind === 'word' ? 2 : 3}
-                              className="mt-1 w-full rounded-xl border border-parchment-dark bg-parchment px-3 py-2 text-ink outline-none ring-gold/40 focus:ring-2"
+                              className="mt-1 w-full rounded-xl border border-line bg-canvas px-3 py-2 text-ink outline-none ring-accent/40 focus:ring-2"
                             />
                             <div className="mt-3 flex justify-end">
                               <button
                                 type="button"
                                 onClick={() => onRemove(card.id)}
-                                className="text-sm font-semibold text-ink-soft hover:text-brick"
+                                className="text-sm font-semibold text-muted hover:text-bad"
                               >
                                 Remove from deck
                               </button>
@@ -348,7 +348,7 @@ export function DeckScreen({
                 <button
                   type="button"
                   onClick={onStart}
-                  className="mt-2 w-full rounded-full bg-burgundy px-5 py-3 text-base font-semibold text-parchment"
+                  className="mt-2 w-full rounded-full bg-accent px-5 py-3 text-base font-semibold text-white"
                 >
                   Start reviewing
                 </button>
@@ -357,11 +357,11 @@ export function DeckScreen({
           )}
         </section>
 
-        <details className="rounded-[1.5rem] border border-parchment-dark bg-card p-5">
+        <details className="rounded-[1.5rem] border border-line bg-card p-5">
           <summary className="cursor-pointer font-semibold text-ink">
             Add your own words
           </summary>
-          <p className="mt-2 text-sm text-ink-soft">
+          <p className="mt-2 text-sm text-muted">
             Paste Hebrew or Aramaic, or drop an Excel / CSV file. Lookups go
             through Sefaria’s Jastrow.
           </p>
@@ -383,7 +383,7 @@ export function DeckScreen({
             }}
             onDrop={handleDrop}
             className={`mt-4 ${
-              dropping ? 'rounded-2xl ring-2 ring-burgundy ring-offset-4 ring-offset-card' : ''
+              dropping ? 'rounded-2xl ring-2 ring-accent ring-offset-4 ring-offset-card' : ''
             }`}
           >
             <textarea
@@ -394,13 +394,13 @@ export function DeckScreen({
               onChange={(event) => onPasteChange(event.target.value)}
               placeholder="הדבק מילים בעברית או בארמית"
               rows={4}
-              className="hebrew w-full resize-y rounded-2xl border border-parchment-dark bg-parchment px-3 py-3 text-right text-2xl leading-relaxed text-ink outline-none ring-gold/40 focus:ring-2"
+              className="hebrew w-full resize-y rounded-2xl border border-line bg-canvas px-3 py-3 text-right text-2xl leading-relaxed text-ink outline-none ring-accent/40 focus:ring-2"
             />
             <div className="mt-3 flex flex-wrap items-center gap-3">
               <button
                 type="submit"
                 disabled={busy}
-                className="rounded-full bg-ink px-5 py-2.5 text-sm font-semibold text-parchment disabled:opacity-50"
+                className="rounded-full bg-ink px-5 py-2.5 text-sm font-semibold text-white disabled:opacity-50"
               >
                 {translating ? 'Looking up…' : 'Add words'}
               </button>
@@ -447,8 +447,8 @@ function countsFor(cards: Pick<Card, 'kind'>[]) {
 
 function Stat({ label, value }: { label: string; value: number }) {
   return (
-    <div className="rounded-2xl bg-parchment px-3 py-3 text-center">
-      <dt className="text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-soft">
+    <div className="rounded-2xl bg-canvas px-3 py-3 text-center">
+      <dt className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted">
         {label}
       </dt>
       <dd className="font-display mt-1 text-2xl font-medium text-ink">{value}</dd>
