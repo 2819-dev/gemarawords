@@ -81,7 +81,7 @@ export function StudyScreen({
             onClick={onBack}
             className="rounded-full px-2 py-1 text-sm font-semibold text-muted hover:text-ink"
           >
-            ← Deck
+            ← Sugya
           </button>
           <div className="flex flex-wrap items-center justify-end gap-2">
             {liveStreak > 0 ? (
@@ -223,6 +223,9 @@ export function StudyScreen({
                 className="pressable rounded-full bg-accent px-4 py-3 text-base font-semibold text-white shadow-md disabled:cursor-not-allowed disabled:opacity-40 disabled:shadow-none"
               >
                 Check
+                <span className="ml-1 hidden text-xs font-medium opacity-70 sm:inline">
+                  ↵
+                </span>
               </button>
             </div>
           </form>

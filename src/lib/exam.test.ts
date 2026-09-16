@@ -3,6 +3,7 @@ import {
   EXAM_PASS_PERCENT,
   answeredCount,
   examHonor,
+  nextUnansweredIndex,
   examPacketHtml,
   examQuestions,
   gradeExam,
@@ -92,5 +93,12 @@ describe('exam helpers', () => {
     expect(html).toMatch(/Test Week/)
     expect(html).toMatch(/threshing floor|scattered fruit/i)
     expect(html).toMatch(/אלו מציאות/)
+  })
+
+  it('jumps to the next blank from anywhere in the sheet', () => {
+    expect(nextUnansweredIndex(['yes', '', 'no'], 0)).toBe(1)
+    expect(nextUnansweredIndex(['yes', '', 'no'], 1)).toBe(1)
+    expect(nextUnansweredIndex(['yes', '', 'no'], 2)).toBe(1)
+    expect(nextUnansweredIndex(['yes', 'ok', 'no'], 0)).toBe(-1)
   })
 })

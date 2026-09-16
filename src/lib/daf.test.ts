@@ -67,6 +67,11 @@ describe('Bava Metzia 21b pack', () => {
     expect(new Set(pack.map((card) => card.id)).size).toBe(pack.length)
   })
 
+  it('fills an empty deck with the daf pack', () => {
+    const pack = buildDafPack('bava-metzia-21b')
+    expect(refreshLoadedDeck([])).toEqual(pack)
+  })
+
   it('keeps scores when the same daf is loaded again', () => {
     const pack = buildDafPack('bava-metzia-21b')
     const studied = pack.map((card, index) =>

@@ -1,10 +1,11 @@
 import type { Card } from './types.ts'
-import type { ExamResult } from './exam.ts'
+import { padExamAnswers, type ExamDraft, type ExamResult } from './exam.ts'
 import type { RoundSummary } from './session.ts'
 
 const STORAGE_KEY = 'gemara-words-deck-v2'
 const ROUND_KEY = 'gemara-words-last-round-v1'
 const EXAM_KEY = 'gemara-words-exam-v1'
+const EXAM_DRAFT_KEY = 'gemara-words-exam-draft-v1'
 const NAME_KEY = 'gemara-words-student-name-v1'
 
 function isCard(value: unknown): value is Card {
@@ -133,6 +134,37 @@ export function saveLastExam(result: ExamResult): void {
   if (result.name.trim()) {
     saveStudentName(result.name)
   }
+}
+
+export function loadExamDraft(): ExamDraft | null {
+  try {
+    const raw = localStorage.getItem(EXAM_DRAFT_KEY)
+    if (!raw) {
+      return null
+    }
+    const parsed: unknown = JSON.parse(raw)
+    if (!parsed || typeof parsed !== 'object') {
+      return null
+    }
+    const row = parsed as Record<string, unknown>
+    if (!Array.isArray(row.answers) || typeof row.startedAt !== 'number') {
+      return null
+    }
+    return {
+      answers: padExamAnswers(row.answers.map((item) => String(item))),
+      startedAt: row.startedAt,
+    }
+  } catch {
+    return null
+  }
+}
+
+export function saveExamDraft(draft: ExamDraft): void {
+  localStorage.setItem(EXAM_DRAFT_KEY, JSON.stringify(draft))
+}
+
+export function clearExamDraft(): void {
+  localStorage.removeItem(EXAM_DRAFT_KEY)
 }
 
 export function clearDeckStorage(): void {
