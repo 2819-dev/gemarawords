@@ -67,6 +67,7 @@ export function DeckScreen({
   const [filter, setFilter] = useState<DeckFilter>('all')
   const [query, setQuery] = useState('')
   const [openId, setOpenId] = useState<string | null>(null)
+  const [showAllCards, setShowAllCards] = useState(false)
   const busy = translating || loadingDaf
   const missing = cards.filter((card) => !card.translation.trim()).length
   const canStart = cards.length > 0 && missing === 0 && !busy
@@ -74,6 +75,9 @@ export function DeckScreen({
   const dafLoaded = cards.some((card) => card.id.startsWith('bm21b-'))
   const solid = cards.filter((card) => card.consecutiveCorrect >= MASTER_STREAK).length
   const shaky = cards.filter((card) => card.weight > 1).length
+  const comingBack = cards.filter(
+    (card) => card.weight > 1 || card.consecutiveCorrect === 1,
+  ).length
   const remaining = Math.max(0, cards.length - solid)
 
   const packPreview = useMemo(() => {
@@ -103,6 +107,14 @@ export function DeckScreen({
     })
   }, [cards, filter, query])
 
+  const listedCards = useMemo(() => {
+    const previewing = !showAllCards && filter === 'all' && !query.trim()
+    if (!previewing) {
+      return visibleCards
+    }
+    return visibleCards.slice(0, 6)
+  }, [filter, query, showAllCards, visibleCards])
+
   function handleSubmit(event: FormEvent) {
     event.preventDefault()
     onAdd()
@@ -123,7 +135,7 @@ export function DeckScreen({
 
   return (
     <AppFrame>
-      <main className="mx-auto flex min-h-full max-w-2xl flex-col gap-8 px-4 py-6 pb-16 sm:px-6 sm:py-10">
+      <main className="mx-auto flex min-h-full max-w-2xl flex-col gap-6 px-4 py-6 pb-28 sm:px-6 sm:py-10">
         <header className="flex flex-col gap-4">
           <div className="flex items-end justify-between gap-4">
             <div>
@@ -140,8 +152,8 @@ export function DeckScreen({
           </div>
           <div className="accent-rule w-28" />
           <p className="max-w-lg text-[1.05rem] leading-relaxed text-muted">
-            Type the pshat in English — the terms, the Gemara, then the raayos
-            and diyukim. Misses come back until they’re solid.
+            Eight cards at a time. Type the pshat in English. Misses come back
+            until they’re solid.
           </p>
         </header>
 
@@ -219,6 +231,13 @@ export function DeckScreen({
 
             {cards.length > 0 ? <KindPath cards={cards} /> : null}
 
+            {lastRound && lastRound.reviewed > 0 ? (
+              <p className="text-sm text-muted">
+                Last sitting: {roundHeadline(lastRound)} · {lastRound.correct} of{' '}
+                {lastRound.reviewed}
+              </p>
+            ) : null}
+
             {missing > 0 ? (
               <p className="rounded-xl bg-bad/10 px-3 py-2 text-sm text-bad">
                 {missing} card{missing === 1 ? '' : 's'} still need an answer before
@@ -226,7 +245,7 @@ export function DeckScreen({
               </p>
             ) : null}
 
-            <div className="flex flex-col gap-3 sm:flex-row">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
               {cards.length > 0 ? (
                 <button
                   type="button"
@@ -236,23 +255,26 @@ export function DeckScreen({
                 >
                   {startLabel(solid, cards.length, shaky, lastRound)}
                 </button>
+              ) : (
+                <button
+                  type="button"
+                  disabled={busy || !selected?.available}
+                  onClick={onLoadDaf}
+                  className="pressable flex-1 rounded-full bg-accent px-5 py-3.5 text-lg font-semibold text-white shadow-md disabled:opacity-50"
+                >
+                  {loadingDaf ? 'Loading daf…' : 'Load this daf'}
+                </button>
+              )}
+              {cards.length > 0 ? (
+                <button
+                  type="button"
+                  disabled={busy || !selected?.available}
+                  onClick={onLoadDaf}
+                  className="text-sm font-semibold text-muted hover:text-ink disabled:opacity-50"
+                >
+                  {loadingDaf ? 'Loading…' : dafLoaded ? 'Reload daf' : 'Load daf'}
+                </button>
               ) : null}
-              <button
-                type="button"
-                disabled={busy || !selected?.available}
-                onClick={onLoadDaf}
-                className={
-                  cards.length === 0
-                    ? 'pressable flex-1 rounded-full bg-accent px-5 py-3.5 text-lg font-semibold text-white shadow-md disabled:opacity-50'
-                    : 'pressable rounded-full border border-ink/15 bg-canvas px-5 py-3.5 text-sm font-semibold text-ink disabled:opacity-50 sm:min-w-44'
-                }
-              >
-                {loadingDaf
-                  ? 'Loading daf…'
-                  : dafLoaded
-                    ? 'Reload this daf'
-                    : 'Load this daf'}
-              </button>
             </div>
           </div>
         </section>
@@ -264,74 +286,39 @@ export function DeckScreen({
           <p className="rounded-2xl bg-bad/10 px-4 py-3 text-sm text-bad">{error}</p>
         ) : null}
 
-        {lastRound && lastRound.reviewed > 0 ? (
-          <button
-            type="button"
-            onClick={onStart}
-            disabled={!canStart}
-            className="quiz-card pressable px-5 py-5 text-left disabled:opacity-50"
-          >
-            <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-accent">
-              Last sitting
-            </p>
-            <p className="font-display mt-2 text-2xl font-medium text-ink">
-              {roundHeadline(lastRound)}
-            </p>
-            <p className="mt-1 text-sm text-muted">
-              {lastRound.correct} of {lastRound.reviewed}
-              {lastRound.bestStreak > 1 ? ` · streak ${lastRound.bestStreak}` : ''}
-              {lastRound.solidGained > 0 ? ` · ${lastRound.solidGained} locked in` : ''}
-            </p>
-          </button>
-        ) : null}
-
-        <section className="quiz-card relative overflow-hidden px-5 py-6 sm:px-7">
-          <p
-            className="hebrew pointer-events-none absolute -bottom-6 -right-2 select-none text-[7rem] leading-none text-accent opacity-[0.07]"
-            lang="he"
-            dir="rtl"
-            aria-hidden="true"
-          >
-            מבחן
-          </p>
-          <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-accent">
-            Test Week
-          </p>
-          <h2 className="font-display mt-2 text-3xl font-medium text-ink">
-            Sit the bechina
-          </h2>
-          <p className="mt-2 max-w-lg text-[1.05rem] leading-relaxed text-muted">
-            A full written test on this sugya. Download the packet, write it,
-            upload your answers, and get a score — then a certificate.
-          </p>
-          {lastExam ? (
-            <p className="mt-3 text-sm text-muted">
-              Last bechina: {lastExam.correct}/{lastExam.total} · {lastExam.honor}
-            </p>
-          ) : (
-            <p className="mt-3 text-sm text-muted">
-              17 English questions · machlokes, diyukim, raayos.
-            </p>
-          )}
-          <div className="relative mt-5 flex flex-col gap-3 sm:flex-row">
-            <button
-              type="button"
-              onClick={onExam}
-              className="pressable flex-1 rounded-full bg-ink px-5 py-3.5 text-base font-semibold text-white shadow-md"
-            >
-              {lastExam ? 'Sit it again' : 'Open Test Week'}
-            </button>
-            {lastExam ? (
+        <section className="quiz-card flex flex-col gap-3 px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+            <div className="min-w-0">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-accent">
+                Test Week
+              </p>
+              <p className="font-display mt-1 text-xl font-medium text-ink">
+                {lastExam ? lastExam.honor : 'Sit the bechina'}
+              </p>
+              <p className="text-sm text-muted">
+                {lastExam
+                  ? `${lastExam.correct}/${lastExam.total} last time`
+                  : '17 questions · when the pshat is in your mouth'}
+              </p>
+            </div>
+            <div className="flex gap-2">
+              {lastExam ? (
+                <button
+                  type="button"
+                  onClick={onCertificate}
+                  className="pressable rounded-full border border-ink/15 bg-canvas px-4 py-2.5 text-sm font-semibold text-ink"
+                >
+                  Certificate
+                </button>
+              ) : null}
               <button
                 type="button"
-                onClick={onCertificate}
-                className="pressable rounded-full border border-ink/15 bg-canvas px-5 py-3.5 text-sm font-semibold text-ink sm:min-w-44"
+                onClick={onExam}
+                className="pressable rounded-full bg-ink px-4 py-2.5 text-sm font-semibold text-white"
               >
-                Certificate
+                {lastExam ? 'Sit it again' : 'Open'}
               </button>
-            ) : null}
-          </div>
-        </section>
+            </div>
+          </section>
 
         <section className="flex flex-col gap-4">
           <div className="flex items-end justify-between gap-3">
@@ -363,7 +350,12 @@ export function DeckScreen({
             <>
               <div className="flex flex-col gap-3">
                 <div className="flex flex-wrap gap-1.5">
-                  {FILTERS.map((item) => (
+                  {FILTERS.map((item) => {
+                    const label =
+                      item.id === 'back' && comingBack > 0
+                        ? `${item.label} (${comingBack})`
+                        : item.label
+                    return (
                     <button
                       key={item.id}
                       type="button"
@@ -374,9 +366,10 @@ export function DeckScreen({
                           : 'border border-line bg-card text-muted hover:text-ink'
                       }`}
                     >
-                      {item.label}
+                      {label}
                     </button>
-                  ))}
+                    )
+                  })}
                 </div>
                 <label className="sr-only" htmlFor="deck-search">
                   Search the deck
@@ -396,7 +389,7 @@ export function DeckScreen({
                 </p>
               ) : (
                 <ul className="flex flex-col gap-2">
-                  {visibleCards.map((card) => {
+                  {listedCards.map((card) => {
                     const open = openId === card.id
                     return (
                       <li
@@ -474,13 +467,22 @@ export function DeckScreen({
                 </ul>
               )}
 
-              {canStart ? (
+              {visibleCards.length > listedCards.length ? (
                 <button
                   type="button"
-                  onClick={onStart}
-                  className="pressable mt-2 w-full rounded-full bg-accent px-5 py-3.5 text-base font-semibold text-white shadow-md"
+                  onClick={() => setShowAllCards(true)}
+                  className="pressable rounded-full border border-line bg-card px-4 py-2.5 text-sm font-semibold text-ink"
                 >
-                  {startLabel(solid, cards.length, shaky, lastRound)}
+                  Show all {visibleCards.length} cards
+                </button>
+              ) : null}
+              {showAllCards && filter === 'all' && !query.trim() ? (
+                <button
+                  type="button"
+                  onClick={() => setShowAllCards(false)}
+                  className="text-sm font-semibold text-muted hover:text-ink"
+                >
+                  Show fewer
                 </button>
               ) : null}
             </>
@@ -556,6 +558,17 @@ export function DeckScreen({
           </form>
         </details>
       </main>
+      {canStart ? (
+        <div className="pointer-events-none fixed inset-x-0 bottom-0 z-10 flex justify-center px-4 pb-[max(1rem,env(safe-area-inset-bottom))] sm:hidden">
+          <button
+            type="button"
+            onClick={onStart}
+            className="pointer-events-auto pressable w-full max-w-2xl rounded-full bg-accent px-5 py-3.5 text-base font-semibold text-white shadow-md"
+          >
+            {startLabel(solid, cards.length, shaky, lastRound)}
+          </button>
+        </div>
+      ) : null}
     </AppFrame>
   )
 }

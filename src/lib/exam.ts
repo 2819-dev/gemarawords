@@ -326,6 +326,39 @@ export function answeredCount(answers: string[]): number {
   return answers.filter((answer) => answer.trim().length > 0).length
 }
 
+export function nextUnansweredIndex(answers: string[], from = 0): number {
+  if (answers.length === 0) {
+    return -1
+  }
+  const start = ((from % answers.length) + answers.length) % answers.length
+  for (let offset = 0; offset < answers.length; offset += 1) {
+    const index = (start + offset) % answers.length
+    if (!answers[index]?.trim()) {
+      return index
+    }
+  }
+  return -1
+}
+
+export type ExamDraft = {
+  answers: string[]
+  startedAt: number
+}
+
+export function emptyExamAnswers(): string[] {
+  return QUESTIONS.map(() => '')
+}
+
+export function padExamAnswers(raw: string[] | undefined): string[] {
+  const next = emptyExamAnswers()
+  raw?.forEach((answer, index) => {
+    if (index < next.length) {
+      next[index] = answer
+    }
+  })
+  return next
+}
+
 export function downloadBlob(filename: string, contents: string, mime: string) {
   const blob = new Blob([contents], { type: mime })
   const url = URL.createObjectURL(blob)

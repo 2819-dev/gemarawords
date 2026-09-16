@@ -7,11 +7,19 @@ import {
   EXAM_SECTIONS,
   answeredCount,
   downloadBlob,
+  emptyExamAnswers,
   examAnswerSheet,
   examPacketHtml,
   examQuestions,
+  nextUnansweredIndex,
+  padExamAnswers,
   parseAnswerSheet,
 } from '../lib/exam.ts'
+import {
+  clearExamDraft,
+  loadExamDraft,
+  saveExamDraft,
+} from '../lib/storage.ts'
 
 type ExamScreenProps = {
   name: string
@@ -23,20 +31,29 @@ type ExamScreenProps = {
 const QUESTIONS = examQuestions()
 
 export function ExamScreen({ name, onNameChange, onSubmit, onBack }: ExamScreenProps) {
-  const [answers, setAnswers] = useState<string[]>(() => QUESTIONS.map(() => ''))
+  const [answers, setAnswers] = useState(() => padExamAnswers(loadExamDraft()?.answers))
+  const [startedAt, setStartedAt] = useState(() => loadExamDraft()?.startedAt ?? Date.now())
   const [photos, setPhotos] = useState<string[]>([])
-  const [notice, setNotice] = useState('')
+  const [notice, setNotice] = useState(() =>
+    answeredCount(padExamAnswers(loadExamDraft()?.answers)) > 0
+      ? 'Picked up where you left off.'
+      : '',
+  )
   const [error, setError] = useState('')
-  const [startedAt] = useState(() => Date.now())
   const [now, setNow] = useState(() => Date.now())
   const fileInput = useRef<HTMLInputElement>(null)
   const filled = answeredCount(answers)
+  const blank = nextUnansweredIndex(answers)
   const minutes = Math.max(0, Math.round((now - startedAt) / 60000))
 
   useEffect(() => {
     const timer = window.setInterval(() => setNow(Date.now()), 15000)
     return () => window.clearInterval(timer)
   }, [])
+
+  useEffect(() => {
+    saveExamDraft({ answers, startedAt })
+  }, [answers, startedAt])
 
   const sections = useMemo(
     () =>
@@ -108,11 +125,31 @@ export function ExamScreen({ name, onNameChange, onSubmit, onBack }: ExamScreenP
     )
   }
 
+  function jumpToBlank() {
+    const index = nextUnansweredIndex(answers)
+    if (index < 0) {
+      return
+    }
+    const field = document.getElementById(`exam-${QUESTIONS[index]?.id}`)
+    field?.focus()
+    field?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+  }
+
+  function startOver() {
+    setAnswers(emptyExamAnswers())
+    setStartedAt(Date.now())
+    setPhotos([])
+    setNotice('')
+    setError('')
+    clearExamDraft()
+  }
+
   function handleSubmit() {
     if (filled === 0) {
       setError('Write at least one English answer before handing it in.')
       return
     }
+    clearExamDraft()
     onSubmit(answers, Math.max(1, Math.round((Date.now() - startedAt) / 60000)))
   }
 
@@ -133,18 +170,13 @@ export function ExamScreen({ name, onNameChange, onSubmit, onBack }: ExamScreenP
           <h1 className="font-display text-4xl font-medium tracking-tight text-ink sm:text-5xl">
             The bechina
           </h1>
-          <p
-            className="hebrew text-right text-2xl text-ink"
-            lang="he"
-            dir="rtl"
-          >
+          <p className="hebrew text-right text-2xl text-ink" lang="he" dir="rtl">
             {EXAM_HEBREW}
             <span className="text-muted"> · {EXAM_CHAPTER}</span>
           </p>
           <p className="max-w-lg text-[1.05rem] leading-relaxed text-muted">
-            Same sugya as a written test: the machlokes, the diyuk, the raayos.
-            Write the pshat in English. Download a packet, upload what you wrote,
-            or sit it right here.
+            Write the pshat in English. Answers save as you go — leave and come
+            back whenever.
           </p>
         </header>
 
@@ -160,29 +192,51 @@ export function ExamScreen({ name, onNameChange, onSubmit, onBack }: ExamScreenP
               className="rounded-2xl border border-line bg-canvas px-4 py-3 text-lg text-ink outline-none ring-accent/40 focus:ring-2"
             />
           </label>
-          <div className="flex flex-wrap gap-2">
+          {filled > 0 ? (
             <button
               type="button"
-              onClick={downloadPacket}
-              className="pressable rounded-full bg-accent px-4 py-2.5 text-sm font-semibold text-white shadow-md"
+              onClick={startOver}
+              className="self-start text-sm font-semibold text-muted hover:text-bad"
             >
-              Download the test
+              Start over
             </button>
-            <button
-              type="button"
-              onClick={downloadSheet}
-              className="pressable rounded-full border border-ink/15 bg-canvas px-4 py-2.5 text-sm font-semibold text-ink"
+          ) : null}
+          <details className="rounded-2xl bg-canvas px-4 py-3">
+            <summary className="cursor-pointer text-sm font-semibold text-ink">
+              Print or upload a written test
+            </summary>
+            <div className="mt-3 flex flex-wrap gap-2">
+              <button
+                type="button"
+                onClick={downloadPacket}
+                className="pressable rounded-full bg-accent px-4 py-2.5 text-sm font-semibold text-white shadow-md"
+              >
+                Download the test
+              </button>
+              <button
+                type="button"
+                onClick={downloadSheet}
+                className="pressable rounded-full border border-ink/15 bg-card px-4 py-2.5 text-sm font-semibold text-ink"
+              >
+                Answer sheet
+              </button>
+              <button
+                type="button"
+                onClick={() => fileInput.current?.click()}
+                className="pressable rounded-full border border-ink/15 bg-card px-4 py-2.5 text-sm font-semibold text-ink"
+              >
+                Upload answers
+              </button>
+            </div>
+            <p
+              onDragOver={(event) => event.preventDefault()}
+              onDrop={handleDrop}
+              className="mt-3 rounded-2xl border border-dashed border-line bg-card px-4 py-3 text-sm text-muted"
             >
-              Answer sheet
-            </button>
-            <button
-              type="button"
-              onClick={() => fileInput.current?.click()}
-              className="pressable rounded-full border border-ink/15 bg-canvas px-4 py-2.5 text-sm font-semibold text-ink"
-            >
-              Upload answers
-            </button>
-          </div>
+              Drop a numbered answer sheet or photos. Text is scored. Photos stay
+              here so you can type what you wrote.
+            </p>
+          </details>
           <input
             ref={fileInput}
             type="file"
@@ -191,15 +245,6 @@ export function ExamScreen({ name, onNameChange, onSubmit, onBack }: ExamScreenP
             className="sr-only"
             onChange={handleFiles}
           />
-          <p
-            onDragOver={(event) => event.preventDefault()}
-            onDrop={handleDrop}
-            className="rounded-2xl border border-dashed border-line bg-canvas px-4 py-3 text-sm text-muted"
-          >
-            Drop a filled answer sheet or photos of your written test. Numbered
-            text is scored automatically. Photos stay here so you can type what
-            you wrote.
-          </p>
           {notice ? (
             <p className="rounded-xl bg-ok/10 px-3 py-2 text-sm text-ok">{notice}</p>
           ) : null}
@@ -268,15 +313,24 @@ export function ExamScreen({ name, onNameChange, onSubmit, onBack }: ExamScreenP
       </main>
 
       <div className="pointer-events-none fixed inset-x-0 bottom-0 z-10 flex justify-center px-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
-        <div className="pointer-events-auto flex w-full max-w-2xl items-center gap-3 rounded-full border border-line bg-card/95 px-3 py-2 shadow-[0_18px_40px_-24px_rgba(20,22,28,0.55)] backdrop-blur">
+        <div className="pointer-events-auto flex w-full max-w-2xl items-center gap-2 rounded-full border border-line bg-card/95 px-2 py-2 shadow-[0_18px_40px_-24px_rgba(20,22,28,0.55)] backdrop-blur sm:gap-3 sm:px-3">
           <p className="min-w-0 flex-1 px-2 text-sm text-muted">
-            {filled}/{QUESTIONS.length} answered
+            {filled}/{QUESTIONS.length}
             {minutes > 0 ? ` · ${minutes} min` : ''}
           </p>
+          {blank >= 0 ? (
+            <button
+              type="button"
+              onClick={jumpToBlank}
+              className="pressable rounded-full border border-ink/15 bg-canvas px-3 py-2.5 text-sm font-semibold text-ink"
+            >
+              Next blank
+            </button>
+          ) : null}
           <button
             type="button"
             onClick={handleSubmit}
-            className="pressable rounded-full bg-accent px-5 py-2.5 text-sm font-semibold text-white shadow-md"
+            className="pressable rounded-full bg-accent px-4 py-2.5 text-sm font-semibold text-white shadow-md sm:px-5"
           >
             Hand it in
           </button>

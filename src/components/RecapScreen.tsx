@@ -5,9 +5,10 @@ type RecapScreenProps = {
   summary: RoundSummary
   onAgain: () => void
   onHome: () => void
+  onExam: () => void
 }
 
-export function RecapScreen({ summary, onAgain, onHome }: RecapScreenProps) {
+export function RecapScreen({ summary, onAgain, onHome, onExam }: RecapScreenProps) {
   const perfect = summary.correct === summary.reviewed && summary.reviewed > 0
 
   return (
@@ -67,6 +68,15 @@ export function RecapScreen({ summary, onAgain, onHome }: RecapScreenProps) {
               Back to the sugya
             </button>
           </div>
+          {summary.complete ? (
+            <button
+              type="button"
+              onClick={onExam}
+              className="relative mt-4 text-sm font-semibold text-muted hover:text-ink"
+            >
+              Or sit the bechina
+            </button>
+          ) : null}
         </section>
       </main>
     </AppFrame>

@@ -354,6 +354,7 @@ export default function App() {
         summary={lastRound ?? emptyRound()}
         onAgain={beginRound}
         onHome={() => setScreen('deck')}
+        onExam={() => setScreen('exam')}
       />
     )
   }
