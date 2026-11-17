@@ -1,5 +1,6 @@
 import { checkAnswer } from './answer.ts'
 import { pageById } from './daf.ts'
+import { BM25A_EXAM } from './packs/bm25a-exam.ts'
 import { BM45A_EXAM } from './packs/bm45a-exam.ts'
 import type { Card } from './types.ts'
 
@@ -221,6 +222,7 @@ const LEGACY_PAGE_ID = 'bava-metzia-21b'
 const QUESTIONS_BY_PAGE: Record<string, ExamQuestion[]> = {
   'bava-metzia-21b': QUESTIONS,
   'bava-metzia-45a': BM45A_EXAM,
+  'bava-metzia-25a': BM25A_EXAM,
 }
 
 export type Exam = {

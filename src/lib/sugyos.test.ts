@@ -14,17 +14,23 @@ import type { Card } from './types.ts'
 
 const HEBREW = /[֐-׿]/
 
-describe('Bava Metzia 45a pack', () => {
-  const page = PAGES.find((item) => item.id === 'bava-metzia-45a')!
-  const pack = buildDafPack('bava-metzia-45a')
+it('opens on 25a', () => {
+  expect(DEFAULT_PAGE_ID).toBe('bava-metzia-25a')
+})
 
-  it('is the default daf and is split into sugyos', () => {
-    expect(DEFAULT_PAGE_ID).toBe('bava-metzia-45a')
+describe.each([
+  ['bava-metzia-25a', 'bm25a-', 'כְּלִי וּלְפָנָיו פֵּירוֹת'],
+  ['bava-metzia-45a', 'bm45a-', 'דִּינָר בְּדִינָר'],
+])('%s pack', (pageId, prefix, phrase) => {
+  const page = PAGES.find((item) => item.id === pageId)!
+  const pack = buildDafPack(pageId)
+
+  it('is split into sugyos', () => {
     expect(page.available).toBe(true)
     expect(page.sugyos.length).toBeGreaterThanOrEqual(3)
     const sugyaIds = new Set(page.sugyos.map((sugya) => sugya.id))
     expect(pack.every((card) => card.sugya && sugyaIds.has(card.sugya))).toBe(true)
-    expect(pack.every((card) => card.page === 'bava-metzia-45a')).toBe(true)
+    expect(pack.every((card) => card.page === pageId)).toBe(true)
     for (const sugya of page.sugyos) {
       const kinds = new Set(pack.filter((card) => card.sugya === sugya.id).map((card) => card.kind))
       expect([...kinds].sort()).toEqual(['question', 'sentence', 'word'])
@@ -33,12 +39,12 @@ describe('Bava Metzia 45a pack', () => {
 
   it('has unique ids and English answers', () => {
     expect(new Set(pack.map((card) => card.id)).size).toBe(pack.length)
-    expect(pack.every((card) => card.id.startsWith('bm45a-'))).toBe(true)
+    expect(pack.every((card) => card.id.startsWith(prefix))).toBe(true)
     expect(pack.every((card) => !HEBREW.test(card.translation))).toBe(true)
     expect(
       pack.filter((card) => card.kind === 'sentence').every((card) => /english/i.test(card.prompt ?? '')),
     ).toBe(true)
-    expect(pack.some((card) => card.hebrew.includes('דִּינָר בְּדִינָר'))).toBe(true)
+    expect(pack.some((card) => card.hebrew.includes(phrase))).toBe(true)
   })
 
   it('grades each card’s own answer as correct', () => {
@@ -102,8 +108,12 @@ describe('per-daf bechina', () => {
     expect(part.questions.length).toBeLessThan(full.questions.length)
   })
 
-  it('scores a full 45a answer sheet and remembers the daf', () => {
-    const exam = examFor('bava-metzia-45a')
+  it.each(['bava-metzia-25a', 'bava-metzia-45a'])('scores a full %s answer sheet', (pageId) => {
+    const exam = examFor(pageId)
+    expect(exam.questions.length).toBeGreaterThanOrEqual(8)
+    expect(new Set(exam.questions.map((question) => question.sectionId))).toEqual(
+      new Set(PAGES.find((page) => page.id === pageId)!.sugyos.map((sugya) => sugya.id)),
+    )
     for (const question of exam.questions) {
       expect(checkAnswer(examCard(question), question.translation).correct, question.id).toBe(true)
     }
@@ -115,8 +125,8 @@ describe('per-daf bechina', () => {
       exam,
     )
     expect(result.percent).toBe(100)
-    expect(result.pageId).toBe('bava-metzia-45a')
-    expect(result.chapter).toBe('הזהב')
+    expect(result.pageId).toBe(pageId)
+    expect(result.chapter).toBe(PAGES.find((page) => page.id === pageId)!.chapter)
     expect(parseAnswerSheet('1. a\n3. c', exam.questions.length)).toHaveLength(exam.questions.length)
   })
 })
