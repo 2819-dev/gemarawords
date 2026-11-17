@@ -1,4 +1,5 @@
 import { BM21B_ITEMS, BM21B_SUGYOS } from './packs/bm21b.ts'
+import { BM25A_ITEMS, BM25A_SUGYOS } from './packs/bm25a.ts'
 import { BM45A_ITEMS, BM45A_SUGYOS } from './packs/bm45a.ts'
 import type { Card, PackItem, Sugya, TranslationSource } from './types.ts'
 
@@ -22,15 +23,15 @@ export const CUSTOM_SUGYA = 'custom'
 
 export const PAGES: DafPage[] = [
   {
-    id: 'bava-metzia-45a',
-    prefix: 'bm45a-',
-    ref: 'Bava_Metzia.45a',
-    lookupRef: 'Bava Metzia 45a',
-    label: 'Bava Metzia 45a',
-    hebrewLabel: 'בבא מציעא מ״ה ע״א',
-    chapter: 'הזהב',
+    id: 'bava-metzia-25a',
+    prefix: 'bm25a-',
+    ref: 'Bava_Metzia.25a',
+    lookupRef: 'Bava Metzia 25a',
+    label: 'Bava Metzia 25a',
+    hebrewLabel: 'בבא מציעא כ״ה ע״א',
+    chapter: 'אלו מציאות',
     available: true,
-    sugyos: BM45A_SUGYOS,
+    sugyos: BM25A_SUGYOS,
   },
   {
     id: 'bava-metzia-21b',
@@ -43,11 +44,23 @@ export const PAGES: DafPage[] = [
     available: true,
     sugyos: BM21B_SUGYOS,
   },
+  {
+    id: 'bava-metzia-45a',
+    prefix: 'bm45a-',
+    ref: 'Bava_Metzia.45a',
+    lookupRef: 'Bava Metzia 45a',
+    label: 'Bava Metzia 45a',
+    hebrewLabel: 'בבא מציעא מ״ה ע״א',
+    chapter: 'הזהב',
+    available: true,
+    sugyos: BM45A_SUGYOS,
+  },
 ]
 
-export const DEFAULT_PAGE_ID = 'bava-metzia-45a'
+export const DEFAULT_PAGE_ID = 'bava-metzia-25a'
 
 const ITEMS: Record<string, PackItem[]> = {
+  'bava-metzia-25a': BM25A_ITEMS,
   'bava-metzia-45a': BM45A_ITEMS,
   'bava-metzia-21b': BM21B_ITEMS,
 }

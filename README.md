@@ -1,9 +1,10 @@
 # Gemara Word Flashcards
 
-Typed English flashcards for a daf: words, lines of Gemara, and questions on the sugya. Two dafim are ready:
+Typed English flashcards for a daf: words, lines of Gemara, and questions on the sugya. Three dafim are ready:
 
-- **Bava Metzia 45a (הזהב)** — the default. Four sugyos: dinar for a dinar, the proof from perutos, first money / second money, and Yerushalayim and the gezeirah.
+- **Bava Metzia 25a (אלו מציאות)** — the default. Five sugyos: what you must announce, a vessel with produce in front, piles (number or place), coins stacked like towers, and three kings / one king.
 - **Bava Metzia 21b (אלו מציאות)** — four sugyos: the machlokes, Rava’s sevara, the raayos, leket and fruit.
+- **Bava Metzia 45a (הזהב)** — four sugyos: dinar for a dinar, the proof from perutos, first money / second money, and Yerushalayim and the gezeirah.
 
 ## Use it
 

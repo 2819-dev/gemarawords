@@ -140,7 +140,7 @@ export function clearDeckStorage(): void {
   localStorage.removeItem(ROUND_KEY)
 }
 
-const PAGE_KEY = 'gemara-words-page-v1'
+const PAGE_KEY = 'gemara-words-page-v2'
 const SUGYOS_KEY = 'gemara-words-sugyos-v1'
 
 export type SugyaChoice = Record<string, string[]>
