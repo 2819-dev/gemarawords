@@ -12,10 +12,8 @@ export type TranslateOptions = {
 
 async function fetchJson(url: string): Promise<unknown> {
   const response = await fetch(url, {
-    headers: {
-      Accept: 'application/json',
-      'User-Agent': 'gemarawords/1.0',
-    },
+    // Only a CORS-safelisted header, so this also runs straight from the browser.
+    headers: { Accept: 'application/json' },
     signal: AbortSignal.timeout(FETCH_MS),
   })
   if (!response.ok) {

@@ -2,27 +2,25 @@ import { useEffect, useMemo, useRef, useState, type ChangeEvent, type DragEvent 
 import { MixedText } from './MixedText.tsx'
 import { AppFrame } from './AppFrame.tsx'
 import {
-  EXAM_CHAPTER,
-  EXAM_HEBREW,
-  EXAM_SECTIONS,
   answeredCount,
   downloadBlob,
   examAnswerSheet,
   examPacketHtml,
-  examQuestions,
   parseAnswerSheet,
+  type Exam,
 } from '../lib/exam.ts'
 
 type ExamScreenProps = {
+  exam: Exam
   name: string
   onNameChange: (name: string) => void
   onSubmit: (answers: string[], minutes: number) => void
   onBack: () => void
 }
 
-const QUESTIONS = examQuestions()
-
-export function ExamScreen({ name, onNameChange, onSubmit, onBack }: ExamScreenProps) {
+export function ExamScreen({ exam, name, onNameChange, onSubmit, onBack }: ExamScreenProps) {
+  const QUESTIONS = exam.questions
+  const slug = exam.title.toLowerCase().replace(/[^a-z0-9]+/g, '-')
   const [answers, setAnswers] = useState<string[]>(() => QUESTIONS.map(() => ''))
   const [photos, setPhotos] = useState<string[]>([])
   const [notice, setNotice] = useState('')
@@ -40,13 +38,13 @@ export function ExamScreen({ name, onNameChange, onSubmit, onBack }: ExamScreenP
 
   const sections = useMemo(
     () =>
-      EXAM_SECTIONS.map((section) => ({
+      exam.sections.map((section) => ({
         ...section,
         items: QUESTIONS.map((question, index) => ({ question, index })).filter(
           ({ question }) => question.sectionId === section.id,
         ),
       })),
-    [],
+    [QUESTIONS, exam.sections],
   )
 
   async function takeFiles(fileList: FileList | File[]) {
@@ -71,7 +69,7 @@ export function ExamScreen({ name, onNameChange, onSubmit, onBack }: ExamScreenP
       )
     }
     if (texts.length > 0) {
-      const parsed = parseAnswerSheet(texts.join('\n\n'))
+      const parsed = parseAnswerSheet(texts.join('\n\n'), QUESTIONS.length)
       setAnswers(parsed)
       const filledFromFile = answeredCount(parsed)
       setNotice(
@@ -94,16 +92,16 @@ export function ExamScreen({ name, onNameChange, onSubmit, onBack }: ExamScreenP
 
   function downloadPacket() {
     downloadBlob(
-      'bava-metzia-21b-test-week.html',
-      examPacketHtml(),
+      `${slug}-test-week.html`,
+      examPacketHtml(exam),
       'text/html;charset=utf-8',
     )
   }
 
   function downloadSheet() {
     downloadBlob(
-      'bava-metzia-21b-answers.txt',
-      examAnswerSheet(),
+      `${slug}-answers.txt`,
+      examAnswerSheet(exam),
       'text/plain;charset=utf-8',
     )
   }
@@ -138,12 +136,13 @@ export function ExamScreen({ name, onNameChange, onSubmit, onBack }: ExamScreenP
             lang="he"
             dir="rtl"
           >
-            {EXAM_HEBREW}
-            <span className="text-muted"> · {EXAM_CHAPTER}</span>
+            {exam.hebrew}
+            <span className="text-muted"> · {exam.chapter}</span>
           </p>
           <p className="max-w-lg text-[1.05rem] leading-relaxed text-muted">
-            Same sugya as a written test: the machlokes, the diyuk, the raayos.
-            Write the pshat in English. Download a packet, upload what you wrote,
+            {exam.title} as a written test, on the{' '}
+            {exam.sections.length === 1 ? 'sugya' : `${exam.sections.length} sugyos`} you
+            chose. Write the pshat in English. Download a packet, upload what you wrote,
             or sit it right here.
           </p>
         </header>

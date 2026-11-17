@@ -1,9 +1,9 @@
 import { useMemo, useRef, useState, type DragEvent, type FormEvent } from 'react'
-import { buildDafPack, PAGES, type DafPage } from '../lib/daf.ts'
+import { CUSTOM_SUGYA, PAGES, sugyaOf, type DafPage } from '../lib/daf.ts'
 import { questionFor } from '../lib/answer.ts'
 import { MASTER_STREAK } from '../lib/scheduler.ts'
 import { roundHeadline, type RoundSummary } from '../lib/session.ts'
-import type { ExamResult } from '../lib/exam.ts'
+import { resultMeta, type ExamResult } from '../lib/exam.ts'
 import type { Card, CardKind } from '../lib/types.ts'
 import { AppFrame } from './AppFrame.tsx'
 import { KindBadge } from './KindBadge.tsx'
@@ -12,7 +12,12 @@ import { MixedText } from './MixedText.tsx'
 type DeckFilter = 'all' | CardKind | 'back'
 
 type DeckScreenProps = {
+  /** Every card for the selected daf (plus custom words). */
   cards: Card[]
+  /** The cards a round will draw from: only the chosen sugyos. */
+  pool: Card[]
+  chosenSugyos: string[]
+  examQuestionCount: number
   paste: string
   translating: boolean
   loadingDaf: boolean
@@ -22,6 +27,8 @@ type DeckScreenProps = {
   lastRound: RoundSummary | null
   lastExam: ExamResult | null
   onSelectPage: (pageId: string) => void
+  onToggleSugya: (sugyaId: string) => void
+  onChooseSugyos: (sugyaIds: string[]) => void
   onLoadDaf: () => void
   onPasteChange: (value: string) => void
   onAdd: () => void
@@ -42,6 +49,9 @@ const RAIL: Record<CardKind, string> = {
 
 export function DeckScreen({
   cards,
+  pool,
+  chosenSugyos,
+  examQuestionCount,
   paste,
   translating,
   loadingDaf,
@@ -51,6 +61,8 @@ export function DeckScreen({
   lastRound,
   lastExam,
   onSelectPage,
+  onToggleSugya,
+  onChooseSugyos,
   onLoadDaf,
   onPasteChange,
   onAdd,
@@ -68,21 +80,34 @@ export function DeckScreen({
   const [query, setQuery] = useState('')
   const [openId, setOpenId] = useState<string | null>(null)
   const busy = translating || loadingDaf
-  const missing = cards.filter((card) => !card.translation.trim()).length
-  const canStart = cards.length > 0 && missing === 0 && !busy
+  const missing = pool.filter((card) => !card.translation.trim()).length
+  const canStart = pool.length > 0 && missing === 0 && !busy
   const selected = PAGES.find((page) => page.id === selectedPageId) ?? PAGES[0]
-  const dafLoaded = cards.some((card) => card.id.startsWith('bm21b-'))
-  const solid = cards.filter((card) => card.consecutiveCorrect >= MASTER_STREAK).length
-  const shaky = cards.filter((card) => card.weight > 1).length
-  const remaining = Math.max(0, cards.length - solid)
+  const dafLoaded = cards.some((card) => card.page === selectedPageId)
+  const solid = pool.filter((card) => card.consecutiveCorrect >= MASTER_STREAK).length
+  const shaky = pool.filter((card) => card.weight > 1).length
+  const remaining = Math.max(0, pool.length - solid)
+  const stats = countsFor(pool)
 
-  const packPreview = useMemo(() => {
-    const pack = buildDafPack(selectedPageId)
-    return countsFor(pack)
-  }, [selectedPageId])
-
-  const deckCounts = countsFor(cards)
-  const stats = cards.length > 0 ? deckCounts : packPreview
+  const sugyaOptions = useMemo(() => {
+    const options = (selected?.sugyos ?? []).map((sugya) => ({
+      id: sugya.id,
+      title: sugya.title,
+      hebrew: sugya.hebrew,
+    }))
+    if (cards.some((card) => sugyaOf(card) === CUSTOM_SUGYA)) {
+      options.push({ id: CUSTOM_SUGYA, title: 'Your words', hebrew: '' })
+    }
+    return options.map((option) => {
+      const ofSugya = cards.filter((card) => sugyaOf(card) === option.id)
+      return {
+        ...option,
+        total: ofSugya.length,
+        solid: ofSugya.filter((card) => card.consecutiveCorrect >= MASTER_STREAK).length,
+      }
+    })
+  }, [cards, selected])
+  const allChosen = sugyaOptions.every((option) => chosenSugyos.includes(option.id))
 
   const visibleCards = useMemo(() => {
     const needle = query.trim().toLowerCase()
@@ -159,21 +184,21 @@ export function DeckScreen({
               <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-accent">
                 Today’s sugya
               </p>
-              {cards.length > 0 ? (
+              {pool.length > 0 ? (
                 <p className="rounded-full bg-canvas px-3 py-1 text-sm text-muted">
                   {remaining === 0 ? 'All solid' : `${remaining} still open`}
                 </p>
               ) : (
                 <p className="rounded-full bg-accent/10 px-3 py-1 text-sm font-semibold text-accent">
-                  Ready to load
+                  {cards.length > 0 ? 'Pick a sugya' : 'Ready to load'}
                 </p>
               )}
             </div>
 
             <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
-              {cards.length > 0 ? (
+              {pool.length > 0 ? (
                 <div className="flex justify-center sm:block">
-                  <ProgressRing value={solid} total={cards.length} />
+                  <ProgressRing value={solid} total={pool.length} />
                 </div>
               ) : null}
               <div className="min-w-0 flex-1">
@@ -198,7 +223,7 @@ export function DeckScreen({
                     <span className="text-muted"> · {selected.chapter}</span>
                   </p>
                 ) : null}
-                {cards.length > 0 ? (
+                {pool.length > 0 ? (
                   <p className="mt-2 text-sm text-muted">
                     {solid} solid
                     {shaky > 0 ? ` · ${shaky} coming back` : ''}
@@ -211,13 +236,81 @@ export function DeckScreen({
               </div>
             </div>
 
+            {sugyaOptions.length > 0 ? (
+              <fieldset className="flex flex-col gap-2.5">
+                <div className="flex items-center justify-between gap-3">
+                  <legend className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted">
+                    Ask me on
+                  </legend>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      onChooseSugyos(allChosen ? [] : sugyaOptions.map((option) => option.id))
+                    }
+                    className="text-sm font-semibold text-accent underline-offset-2 hover:underline"
+                  >
+                    {allChosen ? 'Clear' : 'Every sugya'}
+                  </button>
+                </div>
+                <div className="grid gap-2 sm:grid-cols-2">
+                  {sugyaOptions.map((option, index) => {
+                    const on = chosenSugyos.includes(option.id)
+                    return (
+                      <button
+                        key={option.id}
+                        type="button"
+                        role="checkbox"
+                        aria-checked={on}
+                        onClick={() => onToggleSugya(option.id)}
+                        className={`pressable flex items-start gap-3 rounded-2xl border px-3.5 py-3 text-left transition-colors ${
+                          on
+                            ? 'border-accent bg-accent/[0.07]'
+                            : 'border-line bg-canvas opacity-75 hover:opacity-100'
+                        }`}
+                      >
+                        <span
+                          className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-md border text-[12px] font-bold ${
+                            on ? 'border-accent bg-accent text-white' : 'border-line bg-card text-transparent'
+                          }`}
+                          aria-hidden="true"
+                        >
+                          ✓
+                        </span>
+                        <span className="min-w-0 flex-1">
+                          <span className="block text-[15px] font-semibold leading-snug text-ink">
+                            {option.id === CUSTOM_SUGYA ? '' : `${index + 1}. `}
+                            {option.title}
+                          </span>
+                          {option.hebrew ? (
+                            <span
+                              className="hebrew mt-0.5 block text-right text-lg leading-snug text-muted"
+                              lang="he"
+                              dir="rtl"
+                            >
+                              {option.hebrew}
+                            </span>
+                          ) : null}
+                          <span className="mt-1 block text-xs text-muted">
+                            {option.total} cards · {option.solid} solid
+                          </span>
+                        </span>
+                      </button>
+                    )
+                  })}
+                </div>
+                {chosenSugyos.length === 0 ? (
+                  <p className="text-sm text-bad">Choose at least one sugya to be asked on.</p>
+                ) : null}
+              </fieldset>
+            ) : null}
+
             <dl className="grid grid-cols-3 gap-2">
               <Stat label="Words" value={stats.words} hint="terms" />
               <Stat label="Gemara" value={stats.sentences} hint="lines" />
               <Stat label="Questions" value={stats.questions} hint="raayos" />
             </dl>
 
-            {cards.length > 0 ? <KindPath cards={cards} /> : null}
+            {pool.length > 0 ? <KindPath cards={pool} /> : null}
 
             {missing > 0 ? (
               <p className="rounded-xl bg-bad/10 px-3 py-2 text-sm text-bad">
@@ -234,7 +327,7 @@ export function DeckScreen({
                   disabled={!canStart}
                   className="pressable flex-1 rounded-full bg-accent px-5 py-3.5 text-lg font-semibold text-white shadow-md disabled:cursor-not-allowed disabled:opacity-40 disabled:shadow-none"
                 >
-                  {startLabel(solid, cards.length, shaky, lastRound)}
+                  {startLabel(solid, pool.length, shaky, lastRound)}
                 </button>
               ) : null}
               <button
@@ -301,23 +394,26 @@ export function DeckScreen({
             Sit the bechina
           </h2>
           <p className="mt-2 max-w-lg text-[1.05rem] leading-relaxed text-muted">
-            A full written test on this sugya. Download the packet, write it,
+            A written test on the sugyos you picked. Download the packet, write it,
             upload your answers, and get a score — then a certificate.
           </p>
           {lastExam ? (
             <p className="mt-3 text-sm text-muted">
-              Last bechina: {lastExam.correct}/{lastExam.total} · {lastExam.honor}
+              Last bechina ({resultMeta(lastExam).title}): {lastExam.correct}/
+              {lastExam.total} · {lastExam.honor}
             </p>
-          ) : (
-            <p className="mt-3 text-sm text-muted">
-              17 English questions · machlokes, diyukim, raayos.
-            </p>
-          )}
+          ) : null}
+          <p className="mt-3 text-sm text-muted">
+            {examQuestionCount === 0
+              ? 'Choose a sugya above to build the bechina.'
+              : `${examQuestionCount} English questions on the sugyos you chose.`}
+          </p>
           <div className="relative mt-5 flex flex-col gap-3 sm:flex-row">
             <button
               type="button"
               onClick={onExam}
-              className="pressable flex-1 rounded-full bg-ink px-5 py-3.5 text-base font-semibold text-white shadow-md"
+              disabled={examQuestionCount === 0}
+              className="pressable flex-1 rounded-full bg-ink px-5 py-3.5 text-base font-semibold text-white shadow-md disabled:opacity-40"
             >
               {lastExam ? 'Sit it again' : 'Open Test Week'}
             </button>
@@ -340,7 +436,7 @@ export function DeckScreen({
               <p className="mt-1 text-sm text-muted">
                 {cards.length === 0
                   ? 'Nothing loaded yet.'
-                  : `${cards.length} cards · tap one to peek`}
+                  : `${cards.length} cards on this daf · tap one to peek`}
               </p>
             </div>
             {cards.length > 0 ? (
@@ -356,8 +452,8 @@ export function DeckScreen({
 
           {cards.length === 0 ? (
             <p className="rounded-[1.5rem] border border-dashed border-line bg-card/70 px-5 py-12 text-center text-muted">
-              Load Bava Metzia 21b and start with the terms, then the Gemara,
-              then the raayos.
+              Load {selected?.label ?? 'the daf'} and start with the terms, then
+              the Gemara, then the questions.
             </p>
           ) : (
             <>
@@ -480,7 +576,7 @@ export function DeckScreen({
                   onClick={onStart}
                   className="pressable mt-2 w-full rounded-full bg-accent px-5 py-3.5 text-base font-semibold text-white shadow-md"
                 >
-                  {startLabel(solid, cards.length, shaky, lastRound)}
+                  {startLabel(solid, pool.length, shaky, lastRound)}
                 </button>
               ) : null}
             </>
