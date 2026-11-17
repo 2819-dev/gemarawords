@@ -1,9 +1,7 @@
 import { AppFrame } from './AppFrame.tsx'
 import {
-  EXAM_CHAPTER,
-  EXAM_HEBREW,
-  EXAM_TITLE,
   certificateHtml,
+  resultMeta,
   downloadBlob,
   type ExamResult,
 } from '../lib/exam.ts'
@@ -22,6 +20,7 @@ export function CertificateScreen({
   onHome,
 }: CertificateScreenProps) {
   const when = formatDate(result.takenAt)
+  const meta = resultMeta(result)
 
   function download() {
     downloadBlob(
@@ -79,7 +78,7 @@ export function CertificateScreen({
             Bechina Certificate
           </h1>
           <p className="hebrew mt-3 text-3xl text-ink" lang="he" dir="rtl">
-            {EXAM_HEBREW}
+            {meta.hebrew}
           </p>
           <p className="mt-8 text-sm uppercase tracking-[0.18em] text-muted">
             This certifies that
@@ -88,8 +87,8 @@ export function CertificateScreen({
             {result.name.trim() || 'Talmid'}
           </p>
           <p className="mx-auto mt-6 max-w-lg text-[1.05rem] leading-relaxed text-muted">
-            sat the bechina on {EXAM_TITLE} · {EXAM_CHAPTER} and can say the pshat
-            of the sugya in English — the machlokes, the diyukim, and the raayos.
+            sat the bechina on {meta.title} · {meta.chapter} and can say the pshat
+            of the sugya in English.
           </p>
           <p className="font-display mt-8 text-3xl font-medium text-accent">{result.honor}</p>
           <p className="font-display mt-4 text-6xl font-medium text-ink">

@@ -5,8 +5,18 @@ import { ExamResultScreen } from './components/ExamResultScreen.tsx'
 import { ExamScreen } from './components/ExamScreen.tsx'
 import { RecapScreen } from './components/RecapScreen.tsx'
 import { StudyScreen } from './components/StudyScreen.tsx'
-import { buildDafPack, PAGES, refreshLoadedDeck } from './lib/daf.ts'
-import { gradeExam, type ExamResult } from './lib/exam.ts'
+import {
+  buildDafPack,
+  cardsForPage,
+  CUSTOM_SUGYA,
+  DEFAULT_PAGE_ID,
+  pageById,
+  refreshLoadedDeck,
+  studyPool,
+  sugyaOf,
+} from './lib/daf.ts'
+import { examFor, gradeExam, type ExamResult } from './lib/exam.ts'
+import { translateWords } from './lib/lookup.ts'
 import { gradeCard, MASTER_STREAK, pickNextCard } from './lib/scheduler.ts'
 import { parseSpreadsheetFile } from './lib/spreadsheet.ts'
 import { ROUND_SIZE, emptyRound, type RoundSummary } from './lib/session.ts'
@@ -14,13 +24,18 @@ import {
   loadDeck,
   loadLastExam,
   loadLastRound,
+  loadPageId,
   loadStudentName,
+  loadSugyaChoice,
   saveDeck,
+  savePageId,
+  saveSugyaChoice,
   saveLastExam,
   saveLastRound,
   saveStudentName,
+  type SugyaChoice,
 } from './lib/storage.ts'
-import type { Card, TranslateResult } from './lib/types.ts'
+import type { Card } from './lib/types.ts'
 import {
   addEntriesToDeck,
   addWordsToDeck,
@@ -31,13 +46,21 @@ import {
 
 type Screen = 'deck' | 'study' | 'recap' | 'exam' | 'exam-result' | 'certificate'
 
+function initialPageId(): string {
+  const saved = loadPageId()
+  return saved && pageById(saved)?.available ? saved : DEFAULT_PAGE_ID
+}
+
 export default function App() {
   const [screen, setScreen] = useState<Screen>('deck')
-  const [cards, setCards] = useState<Card[]>(() => refreshLoadedDeck(loadDeck()))
+  const [selectedPageId, setSelectedPageId] = useState(initialPageId)
+  const [cards, setCards] = useState<Card[]>(() =>
+    refreshLoadedDeck(loadDeck(), [selectedPageId]),
+  )
+  const [sugyaChoice, setSugyaChoice] = useState<SugyaChoice>(() => loadSugyaChoice())
   const [paste, setPaste] = useState('')
   const [translating, setTranslating] = useState(false)
   const [loadingDaf, setLoadingDaf] = useState(false)
-  const [selectedPageId, setSelectedPageId] = useState(PAGES[0]?.id ?? 'bava-metzia-21b')
   const [notice, setNotice] = useState('')
   const [error, setError] = useState('')
   const [currentId, setCurrentId] = useState<string | null>(null)
@@ -58,6 +81,54 @@ export default function App() {
     () => cards.find((card) => card.id === currentId),
     [cards, currentId],
   )
+
+  const selectedPage = pageById(selectedPageId)
+  const pageCards = useMemo(() => cardsForPage(cards, selectedPageId), [cards, selectedPageId])
+  const allSugyaIds = useMemo(() => {
+    const ids = (selectedPage?.sugyos ?? []).map((sugya) => sugya.id)
+    if (pageCards.some((card) => sugyaOf(card) === CUSTOM_SUGYA)) {
+      ids.push(CUSTOM_SUGYA)
+    }
+    return ids
+  }, [pageCards, selectedPage])
+  const chosenSugyos = useMemo(() => {
+    const saved = sugyaChoice[selectedPageId]
+    return saved ? saved.filter((id) => allSugyaIds.includes(id) || id === CUSTOM_SUGYA) : allSugyaIds
+  }, [allSugyaIds, selectedPageId, sugyaChoice])
+  const pool = useMemo(
+    () => studyPool(cards, selectedPageId, chosenSugyos),
+    [cards, chosenSugyos, selectedPageId],
+  )
+  const exam = useMemo(
+    () =>
+      examFor(
+        selectedPageId,
+        chosenSugyos.filter((id) => id !== CUSTOM_SUGYA),
+      ),
+    [chosenSugyos, selectedPageId],
+  )
+
+  function chooseSugyos(ids: string[]) {
+    const next = { ...sugyaChoice, [selectedPageId]: ids }
+    setSugyaChoice(next)
+    saveSugyaChoice(next)
+  }
+
+  function handleToggleSugya(id: string) {
+    chooseSugyos(
+      chosenSugyos.includes(id)
+        ? chosenSugyos.filter((item) => item !== id)
+        : allSugyaIds.filter((item) => item === id || chosenSugyos.includes(item)),
+    )
+  }
+
+  function handleSelectPage(pageId: string) {
+    setSelectedPageId(pageId)
+    savePageId(pageId)
+    setCards((currentCards) => refreshLoadedDeck(currentCards, [pageId]))
+    setNotice('')
+    setError('')
+  }
 
   function rememberExam(result: ExamResult) {
     setLastExam(result)
@@ -81,7 +152,7 @@ export default function App() {
   }
 
   function handleExamSubmit(answers: string[], minutes: number) {
-    rememberExam(gradeExam(answers, studentName, minutes))
+    rememberExam(gradeExam(answers, studentName, minutes, undefined, exam))
     setScreen('exam-result')
   }
 
@@ -96,7 +167,7 @@ export default function App() {
   }
 
   function beginRound() {
-    const first = pickNextCard(cards, null)
+    const first = pickNextCard(pool, null)
     if (!first) {
       return
     }
@@ -117,24 +188,11 @@ export default function App() {
 
     setTranslating(true)
     try {
-      const response = await fetch('/api/translate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          words: needsLookup.map((card) => card.hebrew),
-          lookupRef: PAGES.find((page) => page.id === selectedPageId)?.lookupRef,
-        }),
-      })
-      const data = (await response.json()) as {
-        results?: TranslateResult[]
-        error?: string
-      }
-      if (!response.ok) {
-        throw new Error(data.error || 'Could not look up translations.')
-      }
-      const lookups = new Map(
-        (data.results ?? []).map((item) => [normalizeWord(item.word), item]),
+      const results = await translateWords(
+        needsLookup.map((card) => card.hebrew),
+        { lookupRef: selectedPage?.lookupRef },
       )
+      const lookups = new Map(results.map((item) => [normalizeWord(item.word), item]))
       setCards((currentCards) =>
         currentCards.map((card) => {
           const hit = lookups.get(card.id)
@@ -191,7 +249,7 @@ export default function App() {
         setNotice('That daf is not ready yet.')
         return
       }
-      setCards(refreshLoadedDeck(cards))
+      setCards(refreshLoadedDeck(cards, [selectedPageId]))
       const words = pack.filter((card) => card.kind === 'word').length
       const sentences = pack.filter((card) => card.kind === 'sentence').length
       const questions = pack.filter((card) => card.kind === 'question').length
@@ -295,7 +353,7 @@ export default function App() {
         return
       }
 
-      const next = pickNextCard(nextCards, graded.id)
+      const next = pickNextCard(studyPool(nextCards, selectedPageId, chosenSugyos), graded.id)
       if (!next) {
         rememberRound({ ...summary, complete: true })
         setCurrentId(null)
@@ -307,8 +365,10 @@ export default function App() {
     [
       bestStreak,
       cards,
+      chosenSugyos,
       current,
       reviewed,
+      selectedPageId,
       sessionCorrect,
       sessionStreak,
       solidGained,
@@ -318,6 +378,7 @@ export default function App() {
   if (screen === 'exam') {
     return (
       <ExamScreen
+        exam={exam}
         name={studentName}
         onNameChange={handleExamName}
         onSubmit={handleExamSubmit}
@@ -359,7 +420,7 @@ export default function App() {
   }
 
   if (screen === 'study' && current) {
-    const masteredCount = cards.filter(
+    const masteredCount = pool.filter(
       (card) => card.consecutiveCorrect >= MASTER_STREAK,
     ).length
     return (
@@ -378,7 +439,10 @@ export default function App() {
 
   return (
     <DeckScreen
-      cards={cards}
+      cards={pageCards}
+      pool={pool}
+      chosenSugyos={chosenSugyos}
+      examQuestionCount={exam.questions.length}
       paste={paste}
       translating={translating}
       loadingDaf={loadingDaf}
@@ -387,7 +451,9 @@ export default function App() {
       error={error}
       lastRound={lastRound}
       lastExam={lastExam}
-      onSelectPage={setSelectedPageId}
+      onSelectPage={handleSelectPage}
+      onToggleSugya={handleToggleSugya}
+      onChooseSugyos={chooseSugyos}
       onLoadDaf={() => void handleLoadDaf()}
       onPasteChange={setPaste}
       onAdd={() => void handleAdd()}

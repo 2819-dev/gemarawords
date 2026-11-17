@@ -139,3 +139,54 @@ export function clearDeckStorage(): void {
   localStorage.removeItem(STORAGE_KEY)
   localStorage.removeItem(ROUND_KEY)
 }
+
+const PAGE_KEY = 'gemara-words-page-v1'
+const SUGYOS_KEY = 'gemara-words-sugyos-v1'
+
+export type SugyaChoice = Record<string, string[]>
+
+export function loadPageId(): string | null {
+  try {
+    return localStorage.getItem(PAGE_KEY)
+  } catch {
+    return null
+  }
+}
+
+export function savePageId(pageId: string): void {
+  try {
+    localStorage.setItem(PAGE_KEY, pageId)
+  } catch {
+    // Not fatal: the choice just will not survive a reload.
+  }
+}
+
+export function loadSugyaChoice(): SugyaChoice {
+  try {
+    const raw = localStorage.getItem(SUGYOS_KEY)
+    if (!raw) {
+      return {}
+    }
+    const parsed: unknown = JSON.parse(raw)
+    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
+      return {}
+    }
+    const choice: SugyaChoice = {}
+    for (const [pageId, ids] of Object.entries(parsed as Record<string, unknown>)) {
+      if (Array.isArray(ids)) {
+        choice[pageId] = ids.filter((id): id is string => typeof id === 'string')
+      }
+    }
+    return choice
+  } catch {
+    return {}
+  }
+}
+
+export function saveSugyaChoice(choice: SugyaChoice): void {
+  try {
+    localStorage.setItem(SUGYOS_KEY, JSON.stringify(choice))
+  } catch {
+    // Not fatal.
+  }
+}

@@ -1,4 +1,6 @@
 import { checkAnswer } from './answer.ts'
+import { pageById } from './daf.ts'
+import { BM45A_EXAM } from './packs/bm45a-exam.ts'
 import type { Card } from './types.ts'
 
 export const EXAM_PASS_PERCENT = 70
@@ -25,6 +27,10 @@ export type GradedExamItem = {
 }
 
 export type ExamResult = {
+  pageId?: string
+  title?: string
+  hebrewTitle?: string
+  chapter?: string
   name: string
   takenAt: string
   minutes: number
@@ -35,29 +41,6 @@ export type ExamResult = {
   passed: boolean
   honor: string
 }
-
-export const EXAM_SECTIONS: ExamSection[] = [
-  {
-    id: 'machlokes',
-    title: 'The machlokes',
-    hint: 'Abaye, Rava, and where they actually argue',
-  },
-  {
-    id: 'sevara',
-    title: 'Rava’s sevara',
-    hint: 'Why he counts ye’ush before the owner knows',
-  },
-  {
-    id: 'raayos',
-    title: 'The raayos',
-    hint: 'Each mishna looks like Rava. Say why it is not.',
-  },
-  {
-    id: 'leket',
-    title: 'Leket and fruit',
-    hint: 'Nemushot, poor people elsewhere, olives and figs',
-  },
-]
 
 const QUESTIONS: ExamQuestion[] = [
   {
@@ -232,13 +215,56 @@ const QUESTIONS: ExamQuestion[] = [
   },
 ]
 
-export const EXAM_TITLE = 'Bava Metzia 21b'
-export const EXAM_HEBREW = 'בבא מציעא כ״א ע״ב'
-export const EXAM_CHAPTER = 'אלו מציאות'
 export const EXAM_SUBTITLE = 'Test Week bechina'
+const LEGACY_PAGE_ID = 'bava-metzia-21b'
 
-export function examQuestions(): ExamQuestion[] {
-  return QUESTIONS
+const QUESTIONS_BY_PAGE: Record<string, ExamQuestion[]> = {
+  'bava-metzia-21b': QUESTIONS,
+  'bava-metzia-45a': BM45A_EXAM,
+}
+
+export type Exam = {
+  pageId: string
+  title: string
+  hebrew: string
+  chapter: string
+  sections: ExamSection[]
+  questions: ExamQuestion[]
+}
+
+/** The bechina for a daf, limited to the chosen sugyos when any are given. */
+export function examFor(pageId: string = LEGACY_PAGE_ID, sectionIds?: string[]): Exam {
+  const page = pageById(pageId)
+  const all = QUESTIONS_BY_PAGE[pageId] ?? []
+  const chosen = sectionIds ? new Set(sectionIds) : null
+  const sections = (page?.sugyos ?? [])
+    .filter((sugya) => !chosen || chosen.has(sugya.id))
+    .map((sugya) => ({ id: sugya.id, title: sugya.title, hint: sugya.hint }))
+  const questions = sections.flatMap((section) =>
+    all.filter((question) => question.sectionId === section.id),
+  )
+  return {
+    pageId,
+    title: page?.label ?? pageId,
+    hebrew: page?.hebrewLabel ?? '',
+    chapter: page?.chapter ?? '',
+    sections,
+    questions,
+  }
+}
+
+export function examQuestions(pageId: string = LEGACY_PAGE_ID): ExamQuestion[] {
+  return examFor(pageId).questions
+}
+
+/** Title lines for a stored result; results from before 45a were all on 21b. */
+export function resultMeta(result: ExamResult): { title: string; hebrew: string; chapter: string } {
+  const fallback = examFor(result.pageId ?? LEGACY_PAGE_ID)
+  return {
+    title: result.title ?? fallback.title,
+    hebrew: result.hebrewTitle ?? fallback.hebrew,
+    chapter: result.chapter ?? fallback.chapter,
+  }
 }
 
 export function examCard(question: ExamQuestion): Card {
@@ -273,8 +299,9 @@ export function gradeExam(
   name: string,
   minutes = 0,
   takenAt = new Date().toISOString(),
+  exam: Exam = examFor(),
 ): ExamResult {
-  const items = QUESTIONS.map((question, index) => {
+  const items = exam.questions.map((question, index) => {
     const answer = answers[index] ?? ''
     return {
       question,
@@ -286,6 +313,10 @@ export function gradeExam(
   const total = items.length
   const percent = total === 0 ? 0 : Math.round((correct / total) * 100)
   return {
+    pageId: exam.pageId,
+    title: exam.title,
+    hebrewTitle: exam.hebrew,
+    chapter: exam.chapter,
     name: name.trim() || 'Talmid',
     takenAt,
     minutes,
@@ -298,8 +329,8 @@ export function gradeExam(
   }
 }
 
-export function parseAnswerSheet(text: string): string[] {
-  const answers = QUESTIONS.map(() => '')
+export function parseAnswerSheet(text: string, count = QUESTIONS.length): string[] {
+  const answers: string[] = Array.from({ length: count }, () => '')
   const pattern = /(?:^|\n)\s*(?:q(?:uestion)?\s*)?(\d{1,2})\s*[.):\-\]]\s*/gi
   const matches = [...text.matchAll(pattern)]
   if (matches.length === 0) {
@@ -338,16 +369,16 @@ export function downloadBlob(filename: string, contents: string, mime: string) {
   window.setTimeout(() => URL.revokeObjectURL(url), 1000)
 }
 
-export function examAnswerSheet(): string {
+export function examAnswerSheet(exam: Exam = examFor()): string {
   const lines = [
-    `${EXAM_TITLE} · ${EXAM_CHAPTER}`,
+    `${exam.title} · ${exam.chapter}`,
     EXAM_SUBTITLE,
-    'Write the pshat in English. Number your answers 1–17.',
+    `Write the pshat in English. Number your answers 1–${exam.questions.length}.`,
     '',
     'Name:',
     '',
   ]
-  QUESTIONS.forEach((question, index) => {
+  exam.questions.forEach((question, index) => {
     lines.push(`${index + 1}. ${question.prompt}`)
     lines.push(`   ${question.hebrew}`)
     lines.push('')
@@ -356,12 +387,12 @@ export function examAnswerSheet(): string {
   return `${lines.join('\n')}\n`
 }
 
-export function examPacketHtml(): string {
-  const sections = EXAM_SECTIONS.map((section) => {
-    const items = QUESTIONS.filter((question) => question.sectionId === section.id)
+export function examPacketHtml(exam: Exam = examFor()): string {
+  const sections = exam.sections.map((section) => {
+    const items = exam.questions.filter((question) => question.sectionId === section.id)
     const body = items
       .map((question) => {
-        const number = QUESTIONS.indexOf(question) + 1
+        const number = exam.questions.indexOf(question) + 1
         return `<article class="q">
   <p class="num">${number}.</p>
   <div class="body">
@@ -383,7 +414,7 @@ export function examPacketHtml(): string {
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>${EXAM_TITLE} · Test Week bechina</title>
+  <title>${escapeHtml(exam.title)} · Test Week bechina</title>
   <style>
     :root { color-scheme: light; }
     body { font-family: "Source Sans 3", "Helvetica Neue", sans-serif; color: #14161c; margin: 40px auto; max-width: 740px; }
@@ -404,17 +435,18 @@ export function examPacketHtml(): string {
 </head>
 <body>
   <p class="kicker">Test Week · Gemara Words</p>
-  <h1>${EXAM_TITLE}</h1>
-  <p lang="he" dir="rtl" class="he">${EXAM_HEBREW} · ${EXAM_CHAPTER}</p>
+  <h1>${escapeHtml(exam.title)}</h1>
+  <p lang="he" dir="rtl" class="he">${escapeHtml(exam.hebrew)} · ${escapeHtml(exam.chapter)}</p>
   <p>Write the pshat in English. Hebrew in the question stays in Gemara order. Do not copy the line — say what it means.</p>
   <div class="meta"><span>Name</span><span>Date</span></div>
   ${sections}
-  <footer>17 questions · answers in English · Bava Metzia 21b / אלו מציאות</footer>
+  <footer>${exam.questions.length} questions · answers in English · ${escapeHtml(exam.title)} / ${escapeHtml(exam.chapter)}</footer>
 </body>
 </html>`
 }
 
 export function certificateHtml(result: ExamResult): string {
+  const meta = resultMeta(result)
   const date = new Date(result.takenAt)
   const when = Number.isNaN(date.getTime())
     ? result.takenAt
@@ -449,10 +481,10 @@ export function certificateHtml(result: ExamResult): string {
   <div class="sheet">
     <p class="kicker">Gemara Words · Test Week</p>
     <h1>Bechina Certificate</h1>
-    <p class="he" lang="he" dir="rtl">${EXAM_HEBREW}</p>
+    <p class="he" lang="he" dir="rtl">${escapeHtml(meta.hebrew)}</p>
     <p>This certifies that</p>
     <p class="name">${escapeHtml(result.name)}</p>
-    <p>sat the bechina on ${EXAM_TITLE} · ${EXAM_CHAPTER} and can say the pshat of the sugya in English.</p>
+    <p>sat the bechina on ${escapeHtml(meta.title)} · ${escapeHtml(meta.chapter)} and can say the pshat of the sugya in English.</p>
     <p class="honor">${escapeHtml(result.honor)}</p>
     <p class="score">${result.correct}<span style="font-size:1.4rem;color:#5c6370">/${result.total}</span></p>
     <p>${result.percent}%${timeLine} · ${escapeHtml(when)}</p>

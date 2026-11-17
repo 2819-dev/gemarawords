@@ -1,15 +1,18 @@
 # Gemara Word Flashcards
 
-Paste Hebrew or Aramaic Gemara, upload Excel, or load a daf. Right now one page is ready: **Bava Metzia 21b (אלו מציאות)** — words, sentences, and questions mixed together. Lookups use Jastrow’s Talmudic dictionary (Hebrew and Aramaic), not modern-Hebrew translate.
+Typed English flashcards for a daf: words, lines of Gemara, and questions on the sugya. Two dafim are ready:
+
+- **Bava Metzia 45a (הזהב)** — the default. Four sugyos: dinar for a dinar, the proof from perutos, first money / second money, and Yerushalayim and the gezeirah.
+- **Bava Metzia 21b (אלו מציאות)** — four sugyos: the machlokes, Rava’s sevara, the raayos, leket and fruit.
 
 ## Use it
 
-1. Choose **Bava Metzia 21b** and press **Load this daf**.
-2. Study a mix of words (ייאוש שלא מדעת), sentences from the Gemara, and questions (“What does ye’ush shelo mida’as mean?”).
-3. Tap a card for the answer, then mark **Correct** or **Incorrect**. Missed cards come back more often.
-4. You can still paste extra words or upload `.xlsx` / `.csv` if you want.
+1. Pick the daf.
+2. Under **Ask me on**, tick the sugyos you want. Rounds only draw cards from those sugyos, and the Test Week bechina only has questions on them. Your choice is saved per daf.
+3. Type the pshat in English. Misses come back more often until they are solid.
+4. You can still paste extra words or upload `.xlsx` / `.csv`. They show up as their own **Your words** section. Lookups go to Sefaria’s Jastrow straight from the browser.
 
-Your deck stays in this browser (`localStorage`).
+Everything stays in this browser (`localStorage`).
 
 ## Local development
 
@@ -19,13 +22,8 @@ npm test
 npm run dev
 ```
 
-The Vite dev server also handles `POST /api/translate`, so you do not need Netlify CLI for local study.
+## Deploy (GitHub Pages)
 
-## Deploy on Netlify
+`.github/workflows/deploy-pages.yml` tests, builds, and publishes `dist` on every push to `main` (or run it by hand from the Actions tab).
 
-1. Push this repo to GitHub.
-2. In Netlify: **Add new site → Import an existing project**.
-3. Build command: `npm run build`
-4. Publish directory: `dist`
-
-`netlify.toml` already sets the build, the translate function, and SPA redirects. No environment variables are required.
+One-time setup: in the repo go to **Settings → Pages → Build and deployment → Source** and choose **GitHub Actions**. The site will be at `https://<owner>.github.io/gemarawords/`.
